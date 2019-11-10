@@ -36,7 +36,10 @@ class StateContainerState extends State<StateContainer> {
       });
     } else {
       setState(() {
-        user.uid = uid ?? user.uid;
+        if(uid == null)
+          user = null;
+        else
+          user.uid = uid ?? user.uid;
       });
     }
   }

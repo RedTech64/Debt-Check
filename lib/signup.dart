@@ -149,74 +149,118 @@ class _VerificationCodePageState extends State<VerificationCodePage> {
   String _verificationId;
   final TextEditingController _smsController = TextEditingController();
   String _message = '';
+  final _formKey = GlobalKey<FormState>();
+  bool _incorrect = false;
 
   @override
   Widget build(BuildContext context) {
     return new Scaffold(
-      body: new Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: <Widget>[
-          Spacer(flex: 1,),
-          Container(
-            child: const Text('Please enter verification code to verify phone number.'),
-            padding: const EdgeInsets.all(8),
-            alignment: Alignment.center,
-          ),
-          Container(
-            padding: EdgeInsets.all(8),
-            width: 200,
-            alignment: Alignment.center,
-            child: TextField(
-              controller: _smsController,
-              keyboardType: TextInputType.number,
-              decoration: new InputDecoration(
-                  labelText: 'Verification Code',
-                  border: new OutlineInputBorder(
-                    borderRadius: new BorderRadius.circular(8.0),
-                  )
+      body: Form(
+        key: _formKey,
+        child: new Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: <Widget>[
+            Spacer(flex: 1,),
+            Container(
+              child: const Text('Please enter verification code to verify phone number.'),
+              padding: const EdgeInsets.all(8),
+              alignment: Alignment.center,
+            ),
+            Container(
+              padding: EdgeInsets.all(8),
+              width: 200,
+              alignment: Alignment.center,
+              child: TextFormField(
+                controller: _smsController,
+                keyboardType: TextInputType.number,
+                decoration: new InputDecoration(
+                    labelText: 'Verification Code',
+                    border: new OutlineInputBorder(
+                      borderRadius: new BorderRadius.circular(8.0),
+                    )
+                ),
+                validator: (value) {
+                  if(value.isEmpty)
+                    return "Must enter code";
+                  else if(_incorrect)
+                    return "Code incorrect";
+                  else
+                    return null;
+                },
+                onChanged: (value) {
+                  if(_incorrect)
+                    setState(() {
+                      _incorrect = false;
+                    });
+                },
               ),
             ),
-          ),
-          RaisedButton(
-            onPressed: () async {
-              _signInWithPhoneNumber();
-
-            },
-            child: const Text('Sign in with phone number'),
-            color: Colors.redAccent,
-            shape: RoundedRectangleBorder(borderRadius: new BorderRadius.circular(16.0)),
-          ),
-          Spacer(flex: 2,),
-        ],
+            RaisedButton(
+              onPressed: () async {
+                if(_formKey.currentState.validate()) {
+                  Navigator.of(context).push(new MaterialPageRoute(
+                      builder: (BuildContext context) {
+                        return new Scaffold(
+                          body: new Center(
+                            child: new CircularProgressIndicator(),
+                          ),
+                        );
+                      }
+                  ));
+                  bool result = await _signInWithPhoneNumber();
+                  if(result) {
+                    var container = StateContainer.of(context);
+                    DocumentSnapshot userDoc = await Firestore.instance.collection('users').document(container.user.uid).get();
+                    if(userDoc.exists) {
+                      Navigator.pushNamed(context, '/');
+                    } else {
+                      Navigator.of(context).pushReplacement(
+                        new MaterialPageRoute(
+                            builder: (BuildContext context) {
+                              return new UserInfoPage();
+                            }
+                        ),
+                      );
+                    }
+                  } else {
+                    Navigator.pop(context);
+                    _incorrect = true;
+                    _formKey.currentState.validate();
+                  }
+                }
+              },
+              child: const Text('Sign in with phone number'),
+              color: Colors.redAccent,
+              shape: RoundedRectangleBorder(borderRadius: new BorderRadius.circular(16.0)),
+            ),
+            Spacer(flex: 2,),
+          ],
+        ),
       ),
     );
   }
 
-  void _signInWithPhoneNumber() async {
+  Future<bool> _signInWithPhoneNumber() async {
     final AuthCredential credential = PhoneAuthProvider.getCredential(
       verificationId: _verificationId,
       smsCode: _smsController.text,
     );
-    final FirebaseUser user =
-        (await _auth.signInWithCredential(credential)).user;
+    FirebaseUser user;
+    try {
+      user = (await _auth.signInWithCredential(credential)).user;
+    } catch(error) {
+      return false;
+    }
     final FirebaseUser currentUser = await _auth.currentUser();
     assert(user.uid == currentUser.uid);
-    setState(() {
-      if (user != null) {
-        var container = StateContainer.of(context);
-        container.updateUserInfo(uid: user.uid);
-        Navigator.of(context).pushReplacement(
-          new MaterialPageRoute(
-            builder: (BuildContext context) {
-              return new UserInfoPage();
-            }
-          ),
-        );
-      } else {
-        _message = 'Sign in failed';
-      }
-    });
+    if (user != null) {
+      var container = StateContainer.of(context);
+      container.updateUserInfo(uid: user.uid);
+      return true;
+    } else {
+      return false;
+    }
   }
 }
 
@@ -228,68 +272,124 @@ class UserInfoPage extends StatefulWidget {
 class _UserInfoPageState extends State<UserInfoPage> {
   TextEditingController _firstNameController = new TextEditingController();
   TextEditingController _lastNameController = new TextEditingController();
+  TextEditingController _usernameController = new TextEditingController();
+  final _formKey = GlobalKey<FormState>();
+  bool _taken = false;
 
   @override
   Widget build(BuildContext context) {
     return new Scaffold(
-      body: new Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: <Widget>[
-          Spacer(flex: 1,),
-          Container(
-            child: const Text('Please fill out the information below:'),
-            padding: const EdgeInsets.all(8),
-            alignment: Alignment.center,
-          ),
-          Container(
-            padding: const EdgeInsets.all(8),
-            width: 200,
-            alignment: Alignment.center,
-            child: TextFormField(
-              controller: _firstNameController,
-              decoration: new InputDecoration(
-                  labelText: 'First Name',
+      body: new Form(
+        key: _formKey,
+        child: new Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: <Widget>[
+            Spacer(flex: 1,),
+            Container(
+              child: const Text('Please fill out the information below:'),
+              padding: const EdgeInsets.all(8),
+              alignment: Alignment.center,
+            ),
+            Container(
+              padding: const EdgeInsets.all(8),
+              width: 200,
+              alignment: Alignment.center,
+              child: TextFormField(
+                controller: _firstNameController,
+                decoration: new InputDecoration(
+                    labelText: 'First Name',
+                    border: new OutlineInputBorder(
+                      borderRadius: new BorderRadius.circular(8.0),
+                    )
+                ),
+                validator: (value) {
+                  if(value.isEmpty)
+                    return 'First name required';
+                  else
+                    return null;
+                },
+              ),
+            ),
+            Container(
+              padding: const EdgeInsets.all(8),
+              width: 200,
+              alignment: Alignment.center,
+              child: TextFormField(
+                controller: _lastNameController,
+                decoration: new InputDecoration(
+                    labelText: 'Last Name',
+                    border: new OutlineInputBorder(
+                      borderRadius: new BorderRadius.circular(8.0),
+                    )
+                ),
+                validator: (value) {
+                  if(value.isEmpty)
+                    return 'Last Name required';
+                  else
+                    return null;
+                },
+              ),
+            ),
+            Container(
+              padding: const EdgeInsets.all(8),
+              width: 200,
+              alignment: Alignment.center,
+              child: TextFormField(
+                controller: _usernameController,
+                inputFormatters: [
+                  WhitelistingTextInputFormatter(RegExp("[A-Za-z0-9]")),
+                ],
+                decoration: new InputDecoration(
+                  prefix: new Text('@'),
+                  labelText: 'Username',
                   border: new OutlineInputBorder(
                     borderRadius: new BorderRadius.circular(8.0),
                   )
+                ),
+                validator: (value) => _usernameExists(value) ? "Username taken" : null,
+                onChanged: (value) {
+                  _formKey.currentState.validate();
+                },
               ),
             ),
-          ),
-          Container(
-            padding: const EdgeInsets.all(8),
-            width: 200,
-            alignment: Alignment.center,
-            child: TextFormField(
-              controller: _lastNameController,
-              decoration: new InputDecoration(
-                  labelText: 'Last Name',
-                  border: new OutlineInputBorder(
-                    borderRadius: new BorderRadius.circular(8.0),
-                  )
-              ),
+            RaisedButton(
+              onPressed: () async {
+                if(_formKey.currentState.validate()) {
+                  var container = StateContainer.of(context);
+                  await _createUserDoc(container.user.uid);
+                  Navigator.pushNamed(context, '/');
+                }
+              },
+              child: const Text('Done'),
+              color: Colors.redAccent,
+              shape: RoundedRectangleBorder(borderRadius: new BorderRadius.circular(16.0)),
             ),
-          ),
-          RaisedButton(
-            onPressed: () async {
-              var container = StateContainer.of(context);
-              await _createUserDoc(container.user.uid,_firstNameController.text,_lastNameController.text);
-              Navigator.pushNamed(context, '/');
-            },
-            child: const Text('Done'),
-            color: Colors.redAccent,
-            shape: RoundedRectangleBorder(borderRadius: new BorderRadius.circular(16.0)),
-          ),
-          Spacer(flex: 2,),
-        ],
+            Spacer(flex: 2,),
+          ],
+        ),
       ),
     );
   }
 
-  Future _createUserDoc(String uid, String firstName, String lastName) {
+  bool _usernameExists(String value) {
+    Firestore.instance.collection('users').where('username', isEqualTo: value).getDocuments().then((docs) {
+      if(docs.documents.length != 0) {
+        _taken = true;
+        _formKey.currentState.validate();
+      } else {
+        _formKey.currentState.validate();
+        _taken = false;
+      }
+    });
+    return _taken;
+  }
+
+  Future _createUserDoc(String uid) {
     return Firestore.instance.collection('users').document(uid).setData({
       'uid': uid,
-      'firstName': firstName,
-      'lastName': lastName,
+      'firstName': _firstNameController.text,
+      'lastName': _lastNameController.text,
+      'username': _usernameController.text
     });
   }
 }
