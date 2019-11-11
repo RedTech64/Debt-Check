@@ -22,11 +22,12 @@ class StateContainer extends StatefulWidget {
   }
 
   @override
-  StateContainerState createState() => new StateContainerState();
+  StateContainerState createState() => new StateContainerState(user);
 }
 
 class StateContainerState extends State<StateContainer> {
   UserData user;
+  StateContainerState(this.user);
 
   void updateUserInfo({uid}) {
     if (user == null) {

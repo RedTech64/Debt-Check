@@ -19,6 +19,8 @@ class MyApp extends StatelessWidget {
     String uid;
     if(_user == null)
       uid = null;
+    else
+      uid = _user.uid;
     return new StateContainer(
       user: new UserData(uid),
       child: new Builder(
