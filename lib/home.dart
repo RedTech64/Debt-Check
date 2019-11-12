@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:debt_check/user_data_container.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'friend_finder.dart';
 
 FirebaseAuth _auth = FirebaseAuth.instance;
 
@@ -86,7 +87,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   Navigator.of(context).push(
                     new MaterialPageRoute(
                       builder: (BuildContext context) {
-                        return new FriendFinderPage();
+                        return new FindFriendsPage();
                       },
                     ),
                   );
@@ -97,7 +98,6 @@ class _MyHomePageState extends State<MyHomePage> {
           content: new FutureBuilder<List<DocumentSnapshot>>(
               future: _getFriendData(userDoc.data),
               builder: (context, snapshot) {
-                print('test');
                 if(snapshot.connectionState == ConnectionState.waiting || snapshot.data == null)
                   return new Text('loading');
                 return Container(

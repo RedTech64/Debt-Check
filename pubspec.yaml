@@ -27,6 +27,7 @@ dependencies:
   firebase_auth: any
   firebase_messaging: any
   flutter_masked_text: any
+  image_picker: any
 
 dev_dependencies:
   flutter_test:

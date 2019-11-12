@@ -1,3 +1,4 @@
+import 'package:debt_check/user_data_container.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -7,7 +8,7 @@ class FindFriendsPage extends StatefulWidget {
 }
 
 class _FindFriendsPageState extends State<FindFriendsPage> {
-  int searchtype = 0;
+  List<DocumentSnapshot> queryResults = [];
   TextEditingController _queryController = new TextEditingController();
 
   @override
@@ -16,29 +17,47 @@ class _FindFriendsPageState extends State<FindFriendsPage> {
       appBar: new AppBar(title: new Text('Select Friend'),),
       body: new Column(
         children: <Widget>[
-          new DropdownButton(
-            items: [
-              DropdownMenuItem(
-                value: 0,
-                child: new Text('Name'),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: new TextField(
+              controller: _queryController,
+              decoration: new InputDecoration(
+                prefixIcon: new Icon(Icons.search),
+                labelText: 'Name/Username',
+                border: new OutlineInputBorder(
+                  borderRadius: new BorderRadius.circular(8.0),
+                )
               ),
-              DropdownMenuItem(
-                value: 1,
-                child: new Text('Username'),
-              ),
-            ],
-          ),
-          new TextField(
-            controller: _queryController,
-            decoration: new InputDecoration(
-              prefixIcon: new Icon(Icons.search),
-              labelText: 'Name/Username',
-              border: new OutlineInputBorder(
-                borderRadius: new BorderRadius.circular(8.0),
-              )
+              onChanged: (value) async {
+                List<DocumentSnapshot> list = await _query(value);
+                setState(() {
+                  queryResults = list;
+                });
+              },
             ),
-            onChanged: (value) {
-              _updateQuery(value);
+          ),
+          ListView.builder(
+            shrinkWrap: true,
+            itemCount: queryResults.length,
+            itemBuilder: (context, index) {
+              return new InkWell(
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Column(
+                    children: <Widget>[
+                      new Text(queryResults[index].data['fullName']),
+                      new Text("@"+queryResults[index].data['username']),
+                    ],
+                  ),
+                ),
+                onTap: () {
+                  var container = StateContainer.of(context);
+                  Firestore.instance.collection('users').document(container.user.uid).updateData({
+                    'friends': FieldValue.arrayUnion([queryResults[index].documentID]),
+                  });
+                  Navigator.of(context).pop();
+                },
+              );
             },
           ),
         ],
@@ -46,7 +65,10 @@ class _FindFriendsPageState extends State<FindFriendsPage> {
     );
   }
   
-  void _updateQuery(String query) {
-    QuerySnapshot docs = Firestore.instance.collection('users').where('fullName', )
+  Future<List<DocumentSnapshot>> _query(String query) async {
+    if(query == "")
+      return [];
+    QuerySnapshot docs = await Firestore.instance.collection('users').where('searchTerms.'+query.toLowerCase(), isEqualTo: true).limit(5).getDocuments();
+    return docs.documents;
   }
 }

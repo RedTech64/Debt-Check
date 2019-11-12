@@ -388,14 +388,27 @@ class _UserInfoPageState extends State<UserInfoPage> {
     });
     return _taken;
   }
-
   Future _createUserDoc(String uid) {
+    Map<String,bool> searchTerms = {};
+    String fullName = _firstNameController.text+" "+_lastNameController.text;
+    for(int i = 0; i < fullName.length; i++) {
+      searchTerms[fullName.substring(0,i+1).toLowerCase()] = true;
+    }
+    for(int i = 0; i < _lastNameController.text.length; i++) {
+      searchTerms[_lastNameController.text.substring(0,i+1).toLowerCase()] = true;
+    }
+    for(int i = 0; i < _usernameController.text.length; i++) {
+      searchTerms[_usernameController.text.substring(0,i+1).toLowerCase()] = true;
+    }
+    print(searchTerms);
     return Firestore.instance.collection('users').document(uid).setData({
       'uid': uid,
       'fullName': _firstNameController.text+" "+_lastNameController.text,
       'firstName': _firstNameController.text,
       'lastName': _lastNameController.text,
-      'username': _usernameController.text
+      'username': _usernameController.text,
+      'searchTerms': searchTerms,
+      'friends': [],
     });
   }
 }
