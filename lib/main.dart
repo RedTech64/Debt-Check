@@ -8,12 +8,13 @@ FirebaseAuth _auth = FirebaseAuth.instance;
 FirebaseUser _user;
 
 void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
   _user = await _auth.currentUser();
+  //_auth.signOut();
   runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     String uid;
@@ -35,7 +36,7 @@ class MyApp extends StatelessWidget {
               var container = StateContainer.of(context);
               switch(settings.name) {
                 default:
-                  if((_user == null || _user.uid == null) && (container.user == null || container.user.uid == null))
+                  if((container.user == null || container.user.uid == null))
                     return new MaterialPageRoute(
                         builder: (_) {
                           return new SignupPage();

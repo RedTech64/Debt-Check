@@ -93,11 +93,16 @@ class _SignupPageState extends State<SignupPage> {
       _message = '';
     });
     final PhoneVerificationCompleted verificationCompleted =
-        (AuthCredential phoneAuthCredential) {
-      _auth.signInWithCredential(phoneAuthCredential);
-      setState(() {
-        _message = 'Received phone auth credential: $phoneAuthCredential';
-      });
+        (AuthCredential phoneAuthCredential) async {
+      await _auth.signInWithCredential(phoneAuthCredential);
+      FirebaseUser user = await _auth.currentUser();
+      var container = StateContainer.of(context);
+      container.updateUserInfo(uid: user.uid);
+      Navigator.of(context).pushReplacement(new MaterialPageRoute(
+          builder: (BuildContext context) {
+            return new UserInfoPage();
+          }
+      ));
     };
 
     final PhoneVerificationFailed verificationFailed =
@@ -387,6 +392,7 @@ class _UserInfoPageState extends State<UserInfoPage> {
   Future _createUserDoc(String uid) {
     return Firestore.instance.collection('users').document(uid).setData({
       'uid': uid,
+      'fullName': _firstNameController.text+" "+_lastNameController.text,
       'firstName': _firstNameController.text,
       'lastName': _lastNameController.text,
       'username': _usernameController.text

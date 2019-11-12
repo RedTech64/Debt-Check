@@ -28,7 +28,7 @@ class _MyHomePageState extends State<MyHomePage> {
     return StreamBuilder<DocumentSnapshot>(
       stream: Firestore.instance.collection('users').document(container.user.uid).snapshots(),
       builder: (context, snapshot) {
-        if(snapshot.connectionState == ConnectionState.waiting)
+        if(snapshot.connectionState == ConnectionState.waiting || snapshot.data == null)
           return new Container();
         return Scaffold(
           appBar: AppBar(
@@ -47,7 +47,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   children: <Widget>[
                     Container(
                       padding: EdgeInsets.all(8),
-                      child: new Text("Hello, "+snapshot.data['firstName']),
+                      child: new Text("Hello, "),
                       ),
                     ],
                   ),
@@ -77,7 +77,23 @@ class _MyHomePageState extends State<MyHomePage> {
       context: context,
       builder: (BuildContext context) {
         return new AlertDialog(
-          title: new Text('Friends'),
+          title: Row(
+            children: <Widget>[
+              new Text('Friends'),
+              new IconButton(
+                icon: new Icon(Icons.add),
+                onPressed: () {
+                  Navigator.of(context).push(
+                    new MaterialPageRoute(
+                      builder: (BuildContext context) {
+                        return new FriendFinderPage();
+                      },
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
           content: new FutureBuilder<List<DocumentSnapshot>>(
               future: _getFriendData(userDoc.data),
               builder: (context, snapshot) {
