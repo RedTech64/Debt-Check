@@ -3,13 +3,30 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class FindFriendsPage extends StatefulWidget {
+  List<String> defaultList = [];
+  List<String> exclude = [];
+  FindFriendsPage({this.defaultList, this.exclude});
+
   @override
-  _FindFriendsPageState createState() => _FindFriendsPageState();
+  _FindFriendsPageState createState() => _FindFriendsPageState(this.defaultList, this.exclude);
 }
 
 class _FindFriendsPageState extends State<FindFriendsPage> {
+  List<String> defaultList = [];
+  List<String> exclude = [];
   List<DocumentSnapshot> queryResults = [];
   TextEditingController _queryController = new TextEditingController();
+  _FindFriendsPageState(this.defaultList, this.exclude);
+
+  @override
+  void initState() {
+    _query("").then((list) {
+      setState(() {
+        queryResults = list;
+      });
+    });
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -66,9 +83,18 @@ class _FindFriendsPageState extends State<FindFriendsPage> {
   }
   
   Future<List<DocumentSnapshot>> _query(String query) async {
-    if(query == "")
-      return [];
-    QuerySnapshot docs = await Firestore.instance.collection('users').where('searchTerms.'+query.toLowerCase(), isEqualTo: true).limit(5).getDocuments();
-    return docs.documents;
+    if(query == "") {
+      if(defaultList == null || defaultList.isEmpty)
+        return [];
+      List<Future<DocumentSnapshot>> futures = [];
+      defaultList.forEach((uid) {
+        futures.add(Firestore.instance.collection('users').document(uid).get());
+      });
+      List<DocumentSnapshot> docs = await Future.wait(futures);
+      return docs;
+    }
+    QuerySnapshot queryDocs = await Firestore.instance.collection('users').where('searchTerms.'+query.toLowerCase(), isEqualTo: true).limit(5).getDocuments();
+    queryDocs.documents.removeWhere((doc) => exclude.contains(doc.documentID));
+    return queryDocs.documents;
   }
 }
