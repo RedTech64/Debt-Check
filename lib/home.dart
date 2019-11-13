@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:debt_check/friends_dialog.dart';
 import 'package:debt_check/user_data_container.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -18,12 +21,6 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
 
   @override
-  void initState() {
-
-    super.initState();
-  }
-
-  @override
   Widget build(BuildContext context) {
     var container = StateContainer.of(context);
     return StreamBuilder<DocumentSnapshot>(
@@ -37,7 +34,7 @@ class _MyHomePageState extends State<MyHomePage> {
             actions: <Widget>[
               new IconButton(
                 icon: new Icon(Icons.person),
-                onPressed: () => _openFriendsDialog(snapshot,context),
+                onPressed: () => _openFriendsDialog(context),
               ),
               new IconButton(icon: new Icon(Icons.exit_to_app), onPressed: () {_auth.signOut(); container.updateUserInfo(uid: null); Navigator.pushNamed(context, '/');}),],
           ),
@@ -60,59 +57,12 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  Future<List<DocumentSnapshot>> _getFriendData(DocumentSnapshot userDoc) async {
-    print('run');
-    print(userDoc.data['friends']);
-    List<Future<DocumentSnapshot>> futures = [];
-    var userIds = userDoc.data['friends'];
-    print(userIds.toString());
-    userIds.forEach((id) {
-      futures.add(Firestore.instance.collection('users').document(id).get());
-    });
-    List<DocumentSnapshot> docs = await Future.wait(futures);
-    return docs;
-  }
-
-  void _openFriendsDialog(AsyncSnapshot<DocumentSnapshot> userDoc,context) {
+  void _openFriendsDialog(context) {
+    var container = StateContainer.of(context);
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return new AlertDialog(
-          title: Row(
-            children: <Widget>[
-              new Text('Friends'),
-              new IconButton(
-                icon: new Icon(Icons.add),
-                onPressed: () {
-                  Navigator.of(context).push(
-                    new MaterialPageRoute(
-                      builder: (BuildContext context) {
-                        return new FindFriendsPage();
-                      },
-                    ),
-                  );
-                },
-              ),
-            ],
-          ),
-          content: new FutureBuilder<List<DocumentSnapshot>>(
-              future: _getFriendData(userDoc.data),
-              builder: (context, snapshot) {
-                if(snapshot.connectionState == ConnectionState.waiting || snapshot.data == null)
-                  return new Text('loading');
-                return Container(
-                  width: 200,
-                  child: new ListView.builder(
-                    shrinkWrap: true,
-                    itemCount: snapshot.data.length,
-                    itemBuilder: (context, index) {
-                      return new Text(snapshot.data[index]['firstName']);
-                    },
-                  ),
-                );
-              }
-          ),
-        );
+        return new FriendsDialog(container.user.uid);
       }
     );
   }
