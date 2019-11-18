@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart' as prefix0;
 import 'package:debt_check/user_data_container.dart';
+import 'package:debt_check/user_search_delegate.dart';
 import 'package:flutter/material.dart';
-import 'friend_finder.dart';
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -43,13 +43,14 @@ class _FriendsDialogState extends State<FriendsDialog> {
           new IconButton(
             icon: new Icon(Icons.add),
             onPressed: () async {
-              await Navigator.of(context).push(
-                new MaterialPageRoute(
-                  builder: (BuildContext context) {
-                    return new FindFriendsPage(exclude: [container.user.uid, ...friendData.map((doc) => doc.documentID)],);
-                  },
-                ),
+              UserData friendUID = await showSearch<UserData>(
+                context: context,
+                delegate: new UserSearchDelegate(exclude: [container.user.uid, ...friendData.map((doc) => doc.documentID)],),
               );
+              if(friendUID != null)
+                Firestore.instance.collection('users').document(container.user.uid).updateData({
+                  'friends': FieldValue.arrayUnion([friendUID]),
+                });
             },
           ),
         ],

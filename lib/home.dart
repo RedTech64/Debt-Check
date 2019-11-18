@@ -5,7 +5,6 @@ import 'package:debt_check/friends_dialog.dart';
 import 'package:debt_check/user_data_container.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'friend_finder.dart';
 
 FirebaseAuth _auth = FirebaseAuth.instance;
 
