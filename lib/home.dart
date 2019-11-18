@@ -75,6 +75,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 ),
                 floatingActionButton: new FloatingActionButton(
                   child: new Icon(Icons.send),
+                  onPressed: () => _openCreateCheckDialog(snapshot.data),
                 ),
               ),
             );
@@ -82,6 +83,26 @@ class _MyHomePageState extends State<MyHomePage> {
         );
       }
     );
+  }
+
+  void _openCreateCheckDialog(DocumentSnapshot userDoc) async {
+    CheckData checkData = await Navigator.of(context).push(
+      new MaterialPageRoute(
+        builder: (BuildContext context) => new CheckCreateDialog(),
+      ),
+    );
+    if(checkData != null) {
+      Firestore.instance.collection('checks').add({
+        'description': checkData.description,
+        'amount': checkData.amount,
+        'date': Timestamp.fromDate(checkData.date),
+        'creditorName': userDoc.data['fullName'],
+        'creditorUID': userDoc.data['uid'],
+        'debitorName': checkData.debitorName,
+        'debitorUID': checkData.debitorUID,
+        'involved': [userDoc.data['uid'], checkData.debitorUID],
+      });
+    }
   }
 
   void _openFriendsDialog(context) {
