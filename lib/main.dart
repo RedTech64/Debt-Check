@@ -23,7 +23,7 @@ class MyApp extends StatelessWidget {
     else
       uid = _user.uid;
     return new StateContainer(
-      user: new UserData(uid),
+      user: new UserData(uid: uid),
       child: new Builder(
         builder: (BuildContext context) {
           return MaterialApp(

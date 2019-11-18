@@ -1,9 +1,9 @@
-import 'package:cloud_firestore/cloud_firestore.dart' as prefix0;
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:debt_check/user_data_container.dart';
 import 'package:debt_check/user_search_delegate.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'home.dart';
 
 class FriendsDialog extends StatefulWidget {
   String uid;

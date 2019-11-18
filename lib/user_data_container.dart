@@ -1,10 +1,5 @@
 import 'package:flutter/material.dart';
-
-class UserData {
-  String uid;
-
-  UserData(this.uid);
-}
+import 'home.dart';
 
 class StateContainer extends StatefulWidget {
   final Widget child;
@@ -31,7 +26,7 @@ class StateContainerState extends State<StateContainer> {
 
   void updateUserInfo({uid}) {
     if (user == null) {
-      user = new UserData(uid);
+      user = new UserData(uid: uid);
       setState(() {
         user = user;
       });
