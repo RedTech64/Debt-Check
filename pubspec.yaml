@@ -28,6 +28,8 @@ dependencies:
   firebase_messaging: any
   flutter_masked_text: any
   image_picker: any
+  flutter_bloc: any
+  equatable: any
 
 dev_dependencies:
   flutter_test:

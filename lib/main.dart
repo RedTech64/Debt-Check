@@ -3,6 +3,9 @@ import 'package:debt_check/user_data_container.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'home.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'bloc/check_bloc.dart';
+import 'bloc/user_bloc.dart';
 
 FirebaseAuth _auth = FirebaseAuth.instance;
 FirebaseUser _user;
@@ -45,7 +48,17 @@ class MyApp extends StatelessWidget {
                   else {
                     return new MaterialPageRoute(
                         builder: (_) {
-                          return new MyHomePage();
+                          return MultiBlocProvider(
+                            providers: [
+                              BlocProvider<CheckBloc>(
+                                builder: (BuildContext context) => CheckBloc(container.user.uid)..add(StartCheckBloc()),
+                              ),
+                              BlocProvider<UserBloc>(
+                                builder: (BuildContext context) => UserBloc(container.user.uid)..add(StartFriendBloc()),
+                              ),
+                            ],
+                            child: new HomePage(),
+                          );
                         }
                     );
                   }

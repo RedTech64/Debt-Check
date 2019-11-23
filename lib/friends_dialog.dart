@@ -4,38 +4,26 @@ import 'package:debt_check/user_search_delegate.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'home.dart';
+import 'bloc/user_bloc.dart';
 
 class FriendsDialog extends StatefulWidget {
   String uid;
-  FriendsDialog(this.uid);
+  UserBloc userBloc;
+  FriendsDialog(this.uid,this.userBloc);
   @override
-  _FriendsDialogState createState() => _FriendsDialogState(this.uid);
+  _FriendsDialogState createState() => _FriendsDialogState(this.uid,this.userBloc);
 }
 
 class _FriendsDialogState extends State<FriendsDialog> {
   String uid;
-  List<DocumentSnapshot> friendData;
-  StreamController<List<DocumentSnapshot>> _streamController;
-  StreamSubscription listener;
-  _FriendsDialogState(this.uid);
-
-  @override
-  void initState() {
-    print("DID CGANGE");
-    _streamController = new StreamController<List<DocumentSnapshot>>();
-
-    listener = Firestore.instance.collection('users').document(uid).snapshots().listen((data) async {
-      List<DocumentSnapshot> newFriendData = await _getFriendData(data);
-      setState(() {
-        friendData = newFriendData;
-      });
-    });
-    super.initState();
-  }
+  UserBloc userBloc;
+  List<UserData> friendData;
+  _FriendsDialogState(this.uid,this.userBloc);
   
   @override
   Widget build(BuildContext context) {
     var container = StateContainer.of(context);
+    friendData = userBloc.state.friends;
     return new AlertDialog(
       title: Row(
         children: <Widget>[
@@ -45,7 +33,7 @@ class _FriendsDialogState extends State<FriendsDialog> {
             onPressed: () async {
               UserData friendUID = await showSearch<UserData>(
                 context: context,
-                delegate: new UserSearchDelegate(exclude: [container.user.uid, ...friendData.map((doc) => doc.documentID)],),
+                delegate: new UserSearchDelegate(exclude: [container.user.uid, ...friendData.map((user) => user.uid)],),
               );
               if(friendUID != null)
                 Firestore.instance.collection('users').document(container.user.uid).updateData({
@@ -56,19 +44,6 @@ class _FriendsDialogState extends State<FriendsDialog> {
         ],
       ),
       content: _getContent(),
-      /*content: new StreamBuilder<List<DocumentSnapshot>>(
-          stream: _streamController.stream,
-          builder: (context, snapshot) {
-            if(snapshot.connectionState == ConnectionState.waiting || snapshot.data == null)
-              return Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  new CircularProgressIndicator(),
-                ],
-              );
-
-          }
-      ),*/
     );
   }
 
@@ -84,7 +59,7 @@ class _FriendsDialogState extends State<FriendsDialog> {
           shrinkWrap: true,
           itemCount: friendData.length,
           itemBuilder: (context, index) {
-            return new Text(friendData[index].data['firstName']);
+            return new Text(friendData[index].fullName);
           },
         ),
       );
@@ -98,12 +73,5 @@ class _FriendsDialogState extends State<FriendsDialog> {
     });
     List<DocumentSnapshot> docs = await Future.wait(futures);
     return docs;
-  }
-
-  @override
-  void dispose() {
-    _streamController.close();
-    listener.cancel();
-    super.dispose();
   }
 }

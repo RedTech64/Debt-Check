@@ -79,7 +79,7 @@ class _CheckCreateDialogState extends State<CheckCreateDialog> {
               new RaisedButton(
                 child: new Text('DONE'),
                 onPressed: () {
-                  Navigator.of(context).pop(new CheckData(descriptionController.text, amountController.numberValue, friendUID, "", "", friendName, date));
+                  Navigator.of(context).pop(new CheckData(description: descriptionController.text, amount: amountController.numberValue, debitorUID: friendUID, debitorName: friendName, date: date));
                 },
               ),
             ],

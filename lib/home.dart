@@ -1,91 +1,74 @@
 import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:debt_check/bloc/user_bloc.dart';
 import 'package:debt_check/check_create_dialog.dart';
+import 'package:debt_check/check_list.dart';
 import 'package:debt_check/friends_dialog.dart';
+import 'package:debt_check/friend_tab.dart';
 import 'package:debt_check/user_data_container.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'bloc/check_bloc.dart';
 
 FirebaseAuth _auth = FirebaseAuth.instance;
 
-class MyHomePage extends StatefulWidget {
-  MyHomePage({Key key, this.title}) : super(key: key);
-
-  final String title;
+class HomePage extends StatefulWidget {
 
   @override
-  _MyHomePageState createState() => _MyHomePageState();
+  _HomePageState createState() => _HomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
+class _HomePageState extends State<HomePage> {
   List<CheckData> checks = [];
 
   @override
   Widget build(BuildContext context) {
     var container = StateContainer.of(context);
-    return StreamBuilder<DocumentSnapshot>(
-      stream: Firestore.instance.collection('users').document(container.user.uid).snapshots(),
-      builder: (context, snapshot) {
-        if(snapshot.connectionState == ConnectionState.waiting || snapshot.data == null)
-          return new Container();
-        return StreamBuilder<QuerySnapshot>(
-          stream: Firestore.instance.collection('checks').where('involved', arrayContains: snapshot.data['uid']).snapshots(),
-          builder: (context, checksSnapshot) {
-            if(checksSnapshot.connectionState != ConnectionState.waiting) {
-              checks = checksSnapshot.data.documents.map((doc) => new CheckData.fromDoc(doc)).toList();
-            }
-            return new DefaultTabController(
-              length: 3,
-              child: Scaffold(
-                appBar: AppBar(
-                  title: Text("Debt Check"),
-                  bottom: new TabBar(
-                    tabs: <Widget>[
-                      Tab(icon: new Icon(Icons.person), text: 'Friends',),
-                      Tab(icon: new Icon(Icons.arrow_downward), text: 'Received',),
-                      Tab(icon: new Icon(Icons.arrow_upward), text: 'Sent',),
-                    ],
-                  ),
-                  actions: <Widget>[
-                    new IconButton(
-                      icon: new Icon(Icons.person),
-                      onPressed: () => _openFriendsDialog(context),
-                    ),
-                    new IconButton(icon: new Icon(Icons.exit_to_app), onPressed: () {_auth.signOut(); container.updateUserInfo(uid: null); Navigator.pushNamed(context, '/');}),],
-                ),
-                body: TabBarView(
-                  children: <Widget>[
-                    new Text('Not yet implemented'),
-                    new ListView.builder(
-                      itemCount: checks.where((check) {return (check.debitorUID == snapshot.data['uid']);}).length,
-                      itemBuilder: (context, index) {
-                        List<CheckData> shown = checks.where((check) {return (check.debitorUID == snapshot.data['uid']);}).toList();
-                        return new CheckCard(shown[index]);
-                      },
-                    ),
-                    new ListView.builder(
-                      itemCount: checks.where((check) {return (check.creditorUID == snapshot.data['uid']);}).toList().length,
-                      itemBuilder: (context, index) {
-                        List<CheckData> shown = checks.where((check) {return (check.creditorUID == snapshot.data['uid']);}).toList();
-                        return new CheckCard(shown[index]);
-                      },
-                    ),
-                  ],
-                ),
-                floatingActionButton: new FloatingActionButton(
-                  child: new Icon(Icons.send),
-                  onPressed: () => _openCreateCheckDialog(snapshot.data),
-                ),
-              ),
-            );
-          }
-        );
-      }
+    return new DefaultTabController(
+      length: 3,
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text("Debt Check"),
+          bottom: new TabBar(
+            tabs: <Widget>[
+              Tab(icon: new Icon(Icons.person), text: 'Friends',),
+              Tab(icon: new Icon(Icons.arrow_downward), text: 'Received',),
+              Tab(icon: new Icon(Icons.arrow_upward), text: 'Sent',),
+            ],
+          ),
+          actions: <Widget>[
+            new IconButton(
+              icon: new Icon(Icons.person),
+              onPressed: () => _openFriendsDialog(context),
+            ),
+            new IconButton(icon: new Icon(Icons.exit_to_app), onPressed: () {_auth.signOut(); container.updateUserInfo(uid: null); Navigator.pushNamed(context, '/');}),],
+        ),
+        body: TabBarView(
+          children: <Widget>[
+            new FriendsTab(),
+            BlocBuilder<CheckBloc,CheckState>(
+              builder: (context, state) {
+                return new CheckList(state.received);
+              },
+            ),
+            BlocBuilder<CheckBloc,CheckState>(
+              builder: (context, state) {
+                return new CheckList(state.sent);
+              },
+            ),
+          ],
+        ),
+        floatingActionButton: new FloatingActionButton(
+          child: new Icon(Icons.send),
+          onPressed: () => _openCreateCheckDialog(BlocProvider.of<UserBloc>(context).state.userData),
+        ),
+      ),
     );
   }
 
-  void _openCreateCheckDialog(DocumentSnapshot userDoc) async {
+  void _openCreateCheckDialog(UserData userData) async {
     CheckData checkData = await Navigator.of(context).push(
       new MaterialPageRoute(
         builder: (BuildContext context) => new CheckCreateDialog(),
@@ -96,43 +79,23 @@ class _MyHomePageState extends State<MyHomePage> {
         'description': checkData.description,
         'amount': checkData.amount,
         'date': Timestamp.fromDate(checkData.date),
-        'creditorName': userDoc.data['fullName'],
-        'creditorUID': userDoc.data['uid'],
+        'creditorName': userData.fullName,
+        'creditorUID': userData.uid,
         'debitorName': checkData.debitorName,
         'debitorUID': checkData.debitorUID,
-        'involved': [userDoc.data['uid'], checkData.debitorUID],
+        'involved': [userData.uid, checkData.debitorUID],
       });
     }
   }
 
   void _openFriendsDialog(context) {
     var container = StateContainer.of(context);
+    UserBloc userBloc = BlocProvider.of<UserBloc>(context);
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return new FriendsDialog(container.user.uid);
+        return new FriendsDialog(container.user.uid,userBloc);
       }
-    );
-  }
-}
-
-class CheckCard extends StatelessWidget {
-  final CheckData checkData;
-
-  CheckCard(this.checkData);
-
-  @override
-  Widget build(BuildContext context) {
-    var container = StateContainer.of(context);
-    return new Card(
-      child: new Column(
-        children: <Widget>[
-          if(checkData.creditorUID == container.user.uid)
-            new Text('${checkData.debitorName} owes you ${checkData.amount} for ${checkData.description}'),
-          if(checkData.debitorName == container.user.uid)
-            new Text('You owe ${checkData.creditorName}, ${checkData.amount} for ${checkData.description}'),
-        ],
-      ),
     );
   }
 }
@@ -145,11 +108,12 @@ class CheckData {
   String creditorName;
   String debitorName;
   DateTime date;
+  bool paid;
 
-  CheckData(this.description,this.amount,this.creditorUID,this.debitorUID,this.creditorName,this.debitorName,this.date);
+  CheckData({this.description,this.amount,this.creditorUID,this.debitorUID,this.creditorName,this.debitorName,this.date,this.paid});
 
   factory CheckData.fromDoc(DocumentSnapshot doc) {
-    return new CheckData(doc.data['description'], doc.data['amount'], doc.data['creditorUID'], doc.data['debitorUID'], doc.data['creditorName'], doc.data['debitorName'], doc.data['date'].toDate());
+    return new CheckData(description: doc.data['description'], amount: doc.data['amount'], creditorUID: doc.data['creditorUID'], debitorUID: doc.data['debitorUID'], creditorName: doc.data['creditorName'], debitorName: doc.data['debitorName'], date: doc.data['date'].toDate(), paid: doc.data['paid']);
   }
 }
 
@@ -161,4 +125,8 @@ class UserData {
   String uid;
 
   UserData({this.firstName,this.lastName,this.fullName,this.username,this.uid});
+
+  factory UserData.fromDoc(DocumentSnapshot doc) {
+    return new UserData(firstName: doc.data['firstName'], lastName: doc.data['lastName'], fullName: doc.data['fullName'], username: doc.data['username'], uid: doc.data['uid']);
+  }
 }
