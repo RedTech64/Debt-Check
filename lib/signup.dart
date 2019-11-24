@@ -409,6 +409,8 @@ class _UserInfoPageState extends State<UserInfoPage> {
       'username': _usernameController.text,
       'searchTerms': searchTerms,
       'friends': [],
+      'credit': 0,
+      'debt': 0,
     });
   }
 }

@@ -70,7 +70,7 @@ class UserSearchDelegate extends SearchDelegate<UserData> {
   Widget _getUserCard(DocumentSnapshot userDoc, context) {
       return new ListTile(
         title: new Text(userDoc['fullName']),
-        subtitle: new Text(userDoc['username']),
+        subtitle: new Text('@'+userDoc['username']),
         onTap: () {
           close(context, new UserData(firstName: userDoc.data['firstName'], lastName: userDoc.data['lastName'], fullName: userDoc.data['fullName'], username: userDoc.data['username'], uid: userDoc.data['uid']));
         },

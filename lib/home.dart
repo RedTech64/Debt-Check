@@ -101,6 +101,7 @@ class _HomePageState extends State<HomePage> {
 }
 
 class CheckData {
+  String id;
   String description;
   double amount;
   String creditorUID;
@@ -110,10 +111,10 @@ class CheckData {
   DateTime date;
   bool paid;
 
-  CheckData({this.description,this.amount,this.creditorUID,this.debitorUID,this.creditorName,this.debitorName,this.date,this.paid});
+  CheckData({this.id,this.description,this.amount,this.creditorUID,this.debitorUID,this.creditorName,this.debitorName,this.date,this.paid});
 
   factory CheckData.fromDoc(DocumentSnapshot doc) {
-    return new CheckData(description: doc.data['description'], amount: doc.data['amount'], creditorUID: doc.data['creditorUID'], debitorUID: doc.data['debitorUID'], creditorName: doc.data['creditorName'], debitorName: doc.data['debitorName'], date: doc.data['date'].toDate(), paid: doc.data['paid']);
+    return new CheckData(id: doc.documentID,description: doc.data['description'], amount: doc.data['amount'], creditorUID: doc.data['creditorUID'], debitorUID: doc.data['debitorUID'], creditorName: doc.data['creditorName'], debitorName: doc.data['debitorName'], date: doc.data['date'].toDate(), paid: doc.data['paid']);
   }
 }
 

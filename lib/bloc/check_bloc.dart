@@ -25,12 +25,26 @@ class Update extends CheckEvent {
   List<CheckData> get props => checkData;
 }
 
+class MarkAsPaid extends CheckEvent {
+  final CheckData checkData;
+  MarkAsPaid(this.checkData);
+}
+
+class Nudge extends CheckEvent {
+  final CheckData checkData;
+  Nudge(this.checkData);
+}
+
 abstract class CheckState extends Equatable {
   const CheckState();
 
   List<CheckData> get received => [];
 
   List<CheckData> get sent => [];
+
+  num getDebtTo(String uid) => 0;
+  num getCreditTo(String uid) => 0;
+  List<CheckData> getFromUser(String uid) => [];
 
   @override
   List<Object> get props => [];
@@ -49,6 +63,26 @@ class Loaded extends CheckState {
   List<CheckData> get sent => checks.where((check) => (check.creditorUID == uid)).toList();
 
   @override
+  num getDebtTo(String uid) {
+    List<CheckData> query = checks.where((check) => check.creditorUID == uid).toList();
+    num total = 0;
+    query.forEach((check) => total += check.amount);
+    return total;
+  }
+
+  @override
+  num getCreditTo(String uid) {
+    List<CheckData> query = checks.where((check) => check.debitorUID == uid).toList();
+    num total = 0;
+    query.forEach((check) => total += check.amount);
+    return total;
+  }
+  
+  List<CheckData> getFromUser(String uid) {
+    return checks.where((check) => check.creditorUID == uid || check.debitorUID == uid).toList();
+  }
+
+  @override
   List<Object> get props => [checks];
 }
 
@@ -65,10 +99,18 @@ class CheckBloc extends Bloc<CheckEvent,CheckState> {
   Stream<CheckState> mapEventToState(CheckEvent event) async* {
     if(event is StartCheckBloc) {
       subscription?.cancel();
-      subscription = Firestore.instance.collection('checks').where('involved', arrayContains: uid).snapshots().listen((data) => add(Update(data)));
+      subscription = Firestore.instance.collection('checks').where('involved', arrayContains: uid).where('paid', isEqualTo: false).snapshots().listen((data) => add(Update(data)));
     }
     if(event is Update) {
       yield Loaded(event.checkData,uid);
+    }
+    if(event is MarkAsPaid) {
+      Firestore.instance.collection('checks').document(event.checkData.id).updateData({
+        'paid': true,
+      });
+    }
+    if(event is Nudge) {
+      //TODO: Implement nudge
     }
   }
 

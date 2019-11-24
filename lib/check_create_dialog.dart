@@ -105,10 +105,11 @@ class _CheckCreateDialogState extends State<CheckCreateDialog> {
               context: context,
               delegate: new UserSearchDelegate(exclude: [uid], defaultList: friends.map((uid) => uid.toString()).toList()),
             );
-            setState(() {
-              friendName = user.fullName;
-              friendUID = user.uid;
-            });
+            if(user != null)
+              setState(() {
+                friendName = user.fullName;
+                friendUID = user.uid;
+              });
           },
         ),
       ],

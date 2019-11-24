@@ -29,41 +29,41 @@ class MyApp extends StatelessWidget {
       user: new UserData(uid: uid),
       child: new Builder(
         builder: (BuildContext context) {
-          return MaterialApp(
-            title: 'Flutter Demo',
-            theme: ThemeData(
-              primarySwatch: Colors.blue,
+          return MultiBlocProvider(
+            providers: [
+              BlocProvider<CheckBloc>(
+                builder: (BuildContext context) => CheckBloc(uid)..add(StartCheckBloc()),
+              ),
+              BlocProvider<UserBloc>(
+                builder: (BuildContext context) => UserBloc(uid)..add(StartFriendBloc()),
+              ),
+            ],
+            child: MaterialApp(
+              title: 'Flutter Demo',
+              theme: ThemeData(
+                primarySwatch: Colors.blue,
+              ),
+              initialRoute: '/',
+              onGenerateRoute: (RouteSettings settings) {
+                var container = StateContainer.of(context);
+                switch(settings.name) {
+                  default:
+                    if((container.user == null || container.user.uid == null))
+                      return new MaterialPageRoute(
+                          builder: (_) {
+                            return new SignupPage();
+                          }
+                      );
+                    else {
+                      return new MaterialPageRoute(
+                          builder: (_) {
+                            return new HomePage();
+                          }
+                      );
+                    }
+                }
+              },
             ),
-            initialRoute: '/',
-            onGenerateRoute: (RouteSettings settings) {
-              var container = StateContainer.of(context);
-              switch(settings.name) {
-                default:
-                  if((container.user == null || container.user.uid == null))
-                    return new MaterialPageRoute(
-                        builder: (_) {
-                          return new SignupPage();
-                        }
-                    );
-                  else {
-                    return new MaterialPageRoute(
-                        builder: (_) {
-                          return MultiBlocProvider(
-                            providers: [
-                              BlocProvider<CheckBloc>(
-                                builder: (BuildContext context) => CheckBloc(container.user.uid)..add(StartCheckBloc()),
-                              ),
-                              BlocProvider<UserBloc>(
-                                builder: (BuildContext context) => UserBloc(container.user.uid)..add(StartFriendBloc()),
-                              ),
-                            ],
-                            child: new HomePage(),
-                          );
-                        }
-                    );
-                  }
-              }
-            },
           );
         },
       ),
