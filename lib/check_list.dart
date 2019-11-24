@@ -2,7 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'home.dart';
-import 'package:debt_check/user_data_container.dart';
+import 'package:debtcheck/user_data_container.dart';
 import 'bloc/check_bloc.dart';
 
 class CheckList extends StatelessWidget {

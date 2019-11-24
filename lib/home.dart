@@ -1,12 +1,12 @@
 import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:debt_check/bloc/user_bloc.dart';
-import 'package:debt_check/check_create_dialog.dart';
-import 'package:debt_check/check_list.dart';
-import 'package:debt_check/friends_dialog.dart';
-import 'package:debt_check/friend_tab.dart';
-import 'package:debt_check/user_data_container.dart';
+import 'package:debtcheck/bloc/user_bloc.dart';
+import 'package:debtcheck/check_create_dialog.dart';
+import 'package:debtcheck/check_list.dart';
+import 'package:debtcheck/friends_dialog.dart';
+import 'package:debtcheck/friend_tab.dart';
+import 'package:debtcheck/user_data_container.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';

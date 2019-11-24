@@ -1,5 +1,5 @@
-import 'package:debt_check/signup.dart';
-import 'package:debt_check/user_data_container.dart';
+import 'package:debtcheck/signup.dart';
+import 'package:debtcheck/user_data_container.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'home.dart';

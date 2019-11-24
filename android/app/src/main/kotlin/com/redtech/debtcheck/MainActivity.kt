@@ -1,4 +1,4 @@
-package com.redtech.debt_check
+package com.redtech.debtcheck
 
 import android.os.Bundle
 

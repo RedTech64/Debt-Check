@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:debt_check/user_data_container.dart';
-import 'package:debt_check/user_search_delegate.dart';
+import 'package:debtcheck/user_data_container.dart';
+import 'package:debtcheck/user_search_delegate.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'home.dart';

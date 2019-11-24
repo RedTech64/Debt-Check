@@ -1,6 +1,6 @@
-import 'package:debt_check/bloc/check_bloc.dart';
-import 'package:debt_check/check_list.dart';
-import 'package:debt_check/home.dart';
+import 'package:debtcheck/bloc/check_bloc.dart';
+import 'package:debtcheck/check_list.dart';
+import 'package:debtcheck/home.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'bloc/user_bloc.dart';

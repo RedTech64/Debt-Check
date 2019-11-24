@@ -1,8 +1,11 @@
-import 'package:debt_check/user_data_container.dart';
+import 'package:debtcheck/user_data_container.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/services.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'bloc/check_bloc.dart';
+import 'bloc/user_bloc.dart';
 
 final FirebaseAuth _auth = FirebaseAuth.instance;
 

@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:bloc/bloc.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:debt_check/home.dart';
+import 'package:debtcheck/home.dart';
 import 'package:equatable/equatable.dart';
 
 abstract class CheckEvent extends Equatable{
