@@ -35,6 +35,11 @@ class Nudge extends CheckEvent {
   Nudge(this.checkData);
 }
 
+class UpdateCheckBlocUser extends CheckEvent {
+  final String uid;
+  UpdateCheckBlocUser(this.uid);
+}
+
 abstract class CheckState extends Equatable {
   const CheckState();
 
@@ -87,7 +92,7 @@ class Loaded extends CheckState {
 }
 
 class CheckBloc extends Bloc<CheckEvent,CheckState> {
-  final String uid;
+  String uid;
   StreamSubscription subscription;
   
   CheckBloc(this.uid);
@@ -111,6 +116,11 @@ class CheckBloc extends Bloc<CheckEvent,CheckState> {
     }
     if(event is Nudge) {
       //TODO: Implement nudge
+    }
+    if(event is UpdateCheckBlocUser) {
+      this.uid = event.uid;
+      subscription?.cancel();
+      subscription = Firestore.instance.collection('checks').where('involved', arrayContains: uid).where('paid', isEqualTo: false).snapshots().listen((data) => add(Update(data)));
     }
   }
 

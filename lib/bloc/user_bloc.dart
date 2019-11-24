@@ -27,6 +27,11 @@ class Update extends UserEvent {
   List<UserData> get props => friends;
 }
 
+class UpdateUserBlocUser extends UserEvent {
+  final String uid;
+  UpdateUserBlocUser(this.uid);
+}
+
 abstract class UserState extends Equatable {
   UserData userData;
   List<UserData> friends;
@@ -53,7 +58,7 @@ class Loaded extends UserState {
 }
 
 class UserBloc extends Bloc<UserEvent,UserState> {
-  final String uid;
+  String uid;
   StreamSubscription subscription;
 
   UserBloc(this.uid);
@@ -77,6 +82,18 @@ class UserBloc extends Bloc<UserEvent,UserState> {
     }
     if(event is Update) {
       yield Loaded(event.userData,event.friends,uid);
+    }
+    if(event is UpdateUserBlocUser) {
+      subscription?.cancel();
+      subscription = Firestore.instance.collection('users').document(uid).snapshots().listen((doc) async {
+        List<Future<DocumentSnapshot>> futures = [];
+        var userIds = doc.data['friends'];
+        userIds.forEach((id) {
+          futures.add(Firestore.instance.collection('users').document(id).get());
+        });
+        List<DocumentSnapshot> docs = await Future.wait(futures);
+        add(Update(doc,docs));
+      });
     }
   }
 

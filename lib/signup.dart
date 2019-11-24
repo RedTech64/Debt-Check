@@ -101,6 +101,8 @@ class _SignupPageState extends State<SignupPage> {
       FirebaseUser user = await _auth.currentUser();
       var container = StateContainer.of(context);
       container.updateUserInfo(uid: user.uid);
+      BlocProvider.of<CheckBloc>(context).add(new UpdateCheckBlocUser(user.uid));
+      BlocProvider.of<UserBloc>(context).add(new UpdateUserBlocUser(user.uid));
       Navigator.of(context).pushReplacement(new MaterialPageRoute(
           builder: (BuildContext context) {
             return new UserInfoPage();
