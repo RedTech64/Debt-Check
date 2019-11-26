@@ -26,6 +26,10 @@
 	<true/>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>This app may require access to the photo library.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>This app may require access to the camera.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>This app may require access to the microphone.</string>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>fetch</string>
