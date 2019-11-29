@@ -73,6 +73,11 @@ class _HomePageState extends State<HomePage> {
       ),
     );
     if(checkData != null) {
+      if(!userData.friendUIDs.contains(checkData.debitorUID)) {
+        Firestore.instance.collection('users').document(userData.uid).updateData({
+          'friends': FieldValue.arrayUnion([checkData.debitorUID]),
+        });
+      }
       Firestore.instance.collection('checks').add({
         'description': checkData.description,
         'amount': checkData.amount,
@@ -122,10 +127,11 @@ class UserData {
   String fullName;
   String username;
   String uid;
+  List<String> friendUIDs;
 
-  UserData({this.firstName,this.lastName,this.fullName,this.username,this.uid});
+  UserData({this.firstName,this.lastName,this.fullName,this.username,this.uid,this.friendUIDs});
 
   factory UserData.fromDoc(DocumentSnapshot doc) {
-    return new UserData(firstName: doc.data['firstName'], lastName: doc.data['lastName'], fullName: doc.data['fullName'], username: doc.data['username'], uid: doc.data['uid']);
+    return new UserData(firstName: doc.data['firstName'], lastName: doc.data['lastName'], fullName: doc.data['fullName'], username: doc.data['username'], uid: doc.data['uid'], friendUIDs: new List<String>.from(doc.data['friends']));
   }
 }
