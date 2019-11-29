@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:debtcheck/signup.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -5,8 +6,7 @@ import 'home.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'bloc/check_bloc.dart';
 import 'bloc/user_bloc.dart';
-
-FirebaseAuth _auth = FirebaseAuth.instance;
+import 'package:firebase_messaging/firebase_messaging.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -20,6 +20,23 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   String start = '';
+  FirebaseAuth _auth = FirebaseAuth.instance;
+  FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
+  String fcmToken;
+
+  @override
+  void initState() {
+    super.initState();
+    _firebaseMessaging.requestNotificationPermissions();
+    _firebaseMessaging.configure(
+      onMessage: (Map<String, dynamic> message) async {
+      },
+      onLaunch: (Map<String, dynamic> message) async {
+      },
+      onResume: (Map<String, dynamic> message) async {
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -44,6 +61,7 @@ class _MyAppState extends State<MyApp> {
                         }
                     );
                   case '/home':
+                    _updateFCM();
                     return new MaterialPageRoute(
                         builder: (_) {
                           return new HomePage();
@@ -63,6 +81,14 @@ class _MyAppState extends State<MyApp> {
         },
       ),
     );
+  }
+
+  void _updateFCM() async {
+    String token = await _firebaseMessaging.getToken();
+    FirebaseUser user = await _auth.currentUser();
+    Firestore.instance.collection('users').document(user.uid).updateData({
+      'fcmToken': token,
+    });
   }
 
   void _checkSignin(context) async {
