@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:debtcheck/user_data_container.dart';
 import 'package:debtcheck/user_search_delegate.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'dart:async';
 import 'home.dart';
 import 'bloc/user_bloc.dart';
@@ -22,7 +22,6 @@ class _FriendsDialogState extends State<FriendsDialog> {
   
   @override
   Widget build(BuildContext context) {
-    var container = StateContainer.of(context);
     friendData = userBloc.state.friends;
     return new AlertDialog(
       title: Row(
@@ -33,10 +32,10 @@ class _FriendsDialogState extends State<FriendsDialog> {
             onPressed: () async {
               UserData friendUID = await showSearch<UserData>(
                 context: context,
-                delegate: new UserSearchDelegate(exclude: [container.user.uid, ...friendData.map((user) => user.uid)],),
+                delegate: new UserSearchDelegate(exclude: [BlocProvider.of<UserBloc>(context).state.userData.uid, ...friendData.map((user) => user.uid)],),
               );
               if(friendUID != null)
-                Firestore.instance.collection('users').document(container.user.uid).updateData({
+                Firestore.instance.collection('users').document(BlocProvider.of<UserBloc>(context).state.userData.uid).updateData({
                   'friends': FieldValue.arrayUnion([friendUID]),
                 });
             },
@@ -59,7 +58,10 @@ class _FriendsDialogState extends State<FriendsDialog> {
           shrinkWrap: true,
           itemCount: friendData.length,
           itemBuilder: (context, index) {
-            return new Text(friendData[index].fullName);
+            return new ListTile(
+              title: new Text(friendData[index].fullName),
+              subtitle: new Text('@${friendData[index].username}'),
+            );
           },
         ),
       );

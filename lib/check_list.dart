@@ -1,8 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'bloc/user_bloc.dart';
 import 'home.dart';
-import 'package:debtcheck/user_data_container.dart';
 import 'bloc/check_bloc.dart';
 
 class CheckList extends StatelessWidget {
@@ -11,11 +11,10 @@ class CheckList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var container = StateContainer.of(context);
     return new ListView.builder(
       itemCount: checks.length,
       itemBuilder: (context, index) {
-        if(container.user.uid == checks[index].creditorUID)
+        if(BlocProvider.of<UserBloc>(context).state.userData.uid == checks[index].creditorUID)
           return new CheckCard(checks[index],CheckType.sent);
         else
           return new CheckCard(checks[index],CheckType.received);

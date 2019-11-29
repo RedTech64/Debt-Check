@@ -1,5 +1,4 @@
 import 'package:debtcheck/signup.dart';
-import 'package:debtcheck/user_data_container.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'home.dart';
@@ -8,59 +7,55 @@ import 'bloc/check_bloc.dart';
 import 'bloc/user_bloc.dart';
 
 FirebaseAuth _auth = FirebaseAuth.instance;
-FirebaseUser _user;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  _user = await _auth.currentUser();
-  //_auth.signOut();
   runApp(MyApp());
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
+  @override
+  _MyAppState createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  String start = '';
+
   @override
   Widget build(BuildContext context) {
-    String uid;
-    if(_user == null)
-      uid = null;
-    else
-      uid = _user.uid;
-    return new StateContainer(
-      user: new UserData(uid: uid),
+    return new BlocProvider(
+      builder: (BuildContext context) => UserBloc(),
       child: new Builder(
         builder: (BuildContext context) {
-          return MultiBlocProvider(
-            providers: [
-              BlocProvider<CheckBloc>(
-                builder: (BuildContext context) => CheckBloc(uid)..add(StartCheckBloc()),
-              ),
-              BlocProvider<UserBloc>(
-                builder: (BuildContext context) => UserBloc(uid)..add(StartFriendBloc()),
-              ),
-            ],
+          return BlocProvider<CheckBloc>(
+            builder: (BuildContext context) => CheckBloc(userBloc: BlocProvider.of<UserBloc>(context)),
             child: MaterialApp(
-              title: 'Flutter Demo',
+              title: 'Debt Check',
               theme: ThemeData(
                 primarySwatch: Colors.blue,
               ),
-              initialRoute: '/',
+              initialRoute: start,
               onGenerateRoute: (RouteSettings settings) {
-                var container = StateContainer.of(context);
                 switch(settings.name) {
+                  case '/signup':
+                    return new MaterialPageRoute(
+                        builder: (_) {
+                          return new SignupPage();
+                        }
+                    );
+                  case '/home':
+                    return new MaterialPageRoute(
+                        builder: (_) {
+                          return new HomePage();
+                        }
+                    );
                   default:
-                    if((container.user == null || container.user.uid == null))
-                      return new MaterialPageRoute(
-                          builder: (_) {
-                            return new SignupPage();
-                          }
-                      );
-                    else {
-                      return new MaterialPageRoute(
-                          builder: (_) {
-                            return new HomePage();
-                          }
-                      );
-                    }
+                    return new MaterialPageRoute(
+                        builder: (context) {
+                          _checkSignin(context);
+                          return new CircularProgressIndicator();
+                        }
+                    );
                 }
               },
             ),
@@ -68,5 +63,16 @@ class MyApp extends StatelessWidget {
         },
       ),
     );
+  }
+
+  void _checkSignin(context) async {
+    FirebaseUser user = await _auth.currentUser();
+    if(user == null || user.uid == null)
+      Navigator.of(context).pushReplacementNamed('/signup');
+    else {
+      BlocProvider.of<UserBloc>(context).add(StartUserBloc(user.uid));
+      BlocProvider.of<CheckBloc>(context).add(StartCheckBloc());
+      Navigator.of(context).pushReplacementNamed('/home');
+    }
   }
 }

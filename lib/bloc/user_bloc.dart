@@ -12,7 +12,10 @@ abstract class UserEvent extends Equatable{
   List<UserData> get props => [];
 }
 
-class StartFriendBloc extends UserEvent {}
+class StartUserBloc extends UserEvent {
+  final String uid;
+  StartUserBloc(this.uid);
+}
 
 class Update extends UserEvent {
   UserData userData;
@@ -41,9 +44,15 @@ abstract class UserState extends Equatable {
 }
 
 class InitialState extends UserState {
-  final UserData userData = null;
+  final UserData userData;
   final List<UserData> friends = [];
+  InitialState(this.userData);
+}
 
+class Loading extends UserState {
+  final UserData userData;
+  final List<UserData> friends = [];
+  Loading(this.userData);
 }
 
 class Loaded extends UserState {
@@ -58,42 +67,46 @@ class Loaded extends UserState {
 }
 
 class UserBloc extends Bloc<UserEvent,UserState> {
-  String uid;
   StreamSubscription subscription;
 
-  UserBloc(this.uid);
-
   @override
-  UserState get initialState => InitialState();
+  UserState get initialState => InitialState(new UserData(uid: null));
 
   @override
   Stream<UserState> mapEventToState(UserEvent event) async* {
-    if(event is StartFriendBloc) {
-      subscription?.cancel();
-      subscription = Firestore.instance.collection('users').document(uid).snapshots().listen((doc) async {
-        List<Future<DocumentSnapshot>> futures = [];
-        var userIds = doc.data['friends'];
-        userIds.forEach((id) {
-          futures.add(Firestore.instance.collection('users').document(id).get());
+    if(event is StartUserBloc) {
+      if(event.uid != null && event.uid != "") {
+        subscription?.cancel();
+        subscription = Firestore.instance.collection('users').document(event.uid).snapshots().listen((doc) async {
+          List<Future<DocumentSnapshot>> futures = [];
+          var userIds = doc.data['friends'];
+          userIds.forEach((id) {
+            futures.add(Firestore.instance.collection('users').document(id).get());
+          });
+          List<DocumentSnapshot> docs = await Future.wait(futures);
+          add(Update(doc,docs));
         });
-        List<DocumentSnapshot> docs = await Future.wait(futures);
-        add(Update(doc,docs));
-      });
+        yield InitialState(new UserData(uid: event.uid));
+      }
     }
     if(event is Update) {
-      yield Loaded(event.userData,event.friends,uid);
+      yield Loaded(event.userData,event.friends,state.userData.uid);
     }
     if(event is UpdateUserBlocUser) {
       subscription?.cancel();
-      subscription = Firestore.instance.collection('users').document(uid).snapshots().listen((doc) async {
-        List<Future<DocumentSnapshot>> futures = [];
-        var userIds = doc.data['friends'];
-        userIds.forEach((id) {
-          futures.add(Firestore.instance.collection('users').document(id).get());
-        });
-        List<DocumentSnapshot> docs = await Future.wait(futures);
-        add(Update(doc,docs));
+      subscription = Firestore.instance.collection('users').document(event.uid).snapshots().listen((doc) async {
+        if(doc.exists) {
+          List<Future<DocumentSnapshot>> futures = [];
+          var userIds = doc.data['friends'];
+          userIds.forEach((id) {
+            futures.add(Firestore.instance.collection('users').document(id).get());
+          });
+          List<DocumentSnapshot> docs = await Future.wait(futures);
+          add(Update(doc,docs));
+        }
       });
+      print(event.uid);
+      yield Loading(new UserData(uid: event.uid));
     }
   }
 

@@ -1,4 +1,3 @@
-import 'package:debtcheck/user_data_container.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/services.dart';
@@ -99,15 +98,19 @@ class _SignupPageState extends State<SignupPage> {
         (AuthCredential phoneAuthCredential) async {
       await _auth.signInWithCredential(phoneAuthCredential);
       FirebaseUser user = await _auth.currentUser();
-      var container = StateContainer.of(context);
-      container.updateUserInfo(uid: user.uid);
-      BlocProvider.of<CheckBloc>(context).add(new UpdateCheckBlocUser(user.uid));
       BlocProvider.of<UserBloc>(context).add(new UpdateUserBlocUser(user.uid));
-      Navigator.of(context).pushReplacement(new MaterialPageRoute(
-          builder: (BuildContext context) {
-            return new UserInfoPage();
-          }
-      ));
+      DocumentSnapshot userDoc = await Firestore.instance.collection('users').document(BlocProvider.of<UserBloc>(context).state.userData.uid).get();
+      if(userDoc.exists) {
+        Navigator.pushNamed(context, '/home');
+      } else {
+        Navigator.of(context).pushReplacement(
+          new MaterialPageRoute(
+              builder: (BuildContext context) {
+                return new UserInfoPage();
+              }
+          ),
+        );
+      }
     };
 
     final PhoneVerificationFailed verificationFailed =
@@ -218,12 +221,12 @@ class _VerificationCodePageState extends State<VerificationCodePage> {
                         );
                       }
                   ));
-                  bool result = await _signInWithPhoneNumber();
-                  if(result) {
-                    var container = StateContainer.of(context);
-                    DocumentSnapshot userDoc = await Firestore.instance.collection('users').document(container.user.uid).get();
+                  String result = await _signInWithPhoneNumber();
+                  if(result != null) {
+                    BlocProvider.of<UserBloc>(context).add(UpdateUserBlocUser(result));
+                    DocumentSnapshot userDoc = await Firestore.instance.collection('users').document(result).get();
                     if(userDoc.exists) {
-                      Navigator.pushNamed(context, '/');
+                      Navigator.pushNamed(context, '/home');
                     } else {
                       Navigator.of(context).pushReplacement(
                         new MaterialPageRoute(
@@ -251,7 +254,7 @@ class _VerificationCodePageState extends State<VerificationCodePage> {
     );
   }
 
-  Future<bool> _signInWithPhoneNumber() async {
+  Future<String> _signInWithPhoneNumber() async {
     final AuthCredential credential = PhoneAuthProvider.getCredential(
       verificationId: _verificationId,
       smsCode: _smsController.text,
@@ -260,16 +263,14 @@ class _VerificationCodePageState extends State<VerificationCodePage> {
     try {
       user = (await _auth.signInWithCredential(credential)).user;
     } catch(error) {
-      return false;
+      return null;
     }
     final FirebaseUser currentUser = await _auth.currentUser();
     assert(user.uid == currentUser.uid);
     if (user != null) {
-      var container = StateContainer.of(context);
-      container.updateUserInfo(uid: user.uid);
-      return true;
+      return user.uid;
     } else {
-      return false;
+      return null;
     }
   }
 }
@@ -365,9 +366,8 @@ class _UserInfoPageState extends State<UserInfoPage> {
             RaisedButton(
               onPressed: () async {
                 if(_formKey.currentState.validate()) {
-                  var container = StateContainer.of(context);
-                  await _createUserDoc(container.user.uid);
-                  Navigator.pushNamed(context, '/');
+                  await _createUserDoc(BlocProvider.of<UserBloc>(context).state.userData.uid);
+                  Navigator.pushNamed(context, '/home');
                 }
               },
               child: const Text('Done'),

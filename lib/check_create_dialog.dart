@@ -1,9 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:debtcheck/user_data_container.dart';
 import 'package:debtcheck/user_search_delegate.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_masked_text/flutter_masked_text.dart';
 
+import 'bloc/user_bloc.dart';
 import 'home.dart';
 
 class CheckCreateDialog extends StatefulWidget {
@@ -20,7 +21,6 @@ class _CheckCreateDialogState extends State<CheckCreateDialog> {
 
   @override
   Widget build(BuildContext context) {
-    var container = StateContainer.of(context);
     return new Scaffold(
       appBar: new AppBar(
         title: new Text('New Debt Check'),
@@ -32,7 +32,7 @@ class _CheckCreateDialogState extends State<CheckCreateDialog> {
               new Row(
                 children: <Widget>[
                   new Icon(Icons.person),
-                  getDebtorDisplay(container.user.uid),
+                  getDebtorDisplay(BlocProvider.of<UserBloc>(context).state.userData.uid),
                 ],
               ),
               new TextFormField(

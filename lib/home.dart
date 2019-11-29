@@ -6,7 +6,6 @@ import 'package:debtcheck/check_create_dialog.dart';
 import 'package:debtcheck/check_list.dart';
 import 'package:debtcheck/friends_dialog.dart';
 import 'package:debtcheck/friend_tab.dart';
-import 'package:debtcheck/user_data_container.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -25,7 +24,6 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    var container = StateContainer.of(context);
     return new DefaultTabController(
       length: 3,
       child: Scaffold(
@@ -43,7 +41,7 @@ class _HomePageState extends State<HomePage> {
               icon: new Icon(Icons.person),
               onPressed: () => _openFriendsDialog(context),
             ),
-            new IconButton(icon: new Icon(Icons.exit_to_app), onPressed: () {_auth.signOut(); container.updateUserInfo(uid: null); Navigator.pushNamed(context, '/');}),],
+            new IconButton(icon: new Icon(Icons.exit_to_app), onPressed: () {_auth.signOut(); BlocProvider.of<UserBloc>(context).add(UpdateUserBlocUser(null)); Navigator.pushNamed(context, '/signup');}),],
         ),
         body: TabBarView(
           children: <Widget>[
@@ -84,17 +82,17 @@ class _HomePageState extends State<HomePage> {
         'debitorName': checkData.debitorName,
         'debitorUID': checkData.debitorUID,
         'involved': [userData.uid, checkData.debitorUID],
+        'paid': false,
       });
     }
   }
 
   void _openFriendsDialog(context) {
-    var container = StateContainer.of(context);
     UserBloc userBloc = BlocProvider.of<UserBloc>(context);
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return new FriendsDialog(container.user.uid,userBloc);
+        return new FriendsDialog(BlocProvider.of<UserBloc>(context).state.userData.uid,userBloc);
       }
     );
   }

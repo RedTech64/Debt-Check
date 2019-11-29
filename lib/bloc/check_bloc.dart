@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:bloc/bloc.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:debtcheck/bloc/user_bloc.dart';
 import 'package:debtcheck/home.dart';
 import 'package:equatable/equatable.dart';
 
@@ -33,11 +34,6 @@ class MarkAsPaid extends CheckEvent {
 class Nudge extends CheckEvent {
   final CheckData checkData;
   Nudge(this.checkData);
-}
-
-class UpdateCheckBlocUser extends CheckEvent {
-  final String uid;
-  UpdateCheckBlocUser(this.uid);
 }
 
 abstract class CheckState extends Equatable {
@@ -92,10 +88,11 @@ class Loaded extends CheckState {
 }
 
 class CheckBloc extends Bloc<CheckEvent,CheckState> {
-  String uid;
-  StreamSubscription subscription;
+  final UserBloc userBloc;
+  StreamSubscription docSubscription;
+  StreamSubscription userSubscription;
   
-  CheckBloc(this.uid);
+  CheckBloc({this.userBloc});
   
   @override
   CheckState get initialState => InitialState();
@@ -103,11 +100,14 @@ class CheckBloc extends Bloc<CheckEvent,CheckState> {
   @override
   Stream<CheckState> mapEventToState(CheckEvent event) async* {
     if(event is StartCheckBloc) {
-      subscription?.cancel();
-      subscription = Firestore.instance.collection('checks').where('involved', arrayContains: uid).where('paid', isEqualTo: false).snapshots().listen((data) => add(Update(data)));
+      userSubscription?.cancel();
+      userSubscription = userBloc.listen((state) {
+        docSubscription?.cancel();
+        docSubscription = Firestore.instance.collection('checks').where('involved', arrayContains: userBloc.state.userData.uid).where('paid', isEqualTo: false).snapshots().listen((data) => add(Update(data)));
+      });
     }
     if(event is Update) {
-      yield Loaded(event.checkData,uid);
+      yield Loaded(event.checkData,userBloc.state.userData.uid);
     }
     if(event is MarkAsPaid) {
       Firestore.instance.collection('checks').document(event.checkData.id).updateData({
@@ -117,16 +117,11 @@ class CheckBloc extends Bloc<CheckEvent,CheckState> {
     if(event is Nudge) {
       //TODO: Implement nudge
     }
-    if(event is UpdateCheckBlocUser) {
-      this.uid = event.uid;
-      subscription?.cancel();
-      subscription = Firestore.instance.collection('checks').where('involved', arrayContains: uid).where('paid', isEqualTo: false).snapshots().listen((data) => add(Update(data)));
-    }
   }
 
   @override
   Future<void> close() {
-    subscription.cancel();
+    docSubscription.cancel();
     return super.close();
   }
 }
