@@ -36,8 +36,8 @@ class UpdateUserBlocUser extends UserEvent {
 }
 
 abstract class UserState extends Equatable {
-  UserData userData;
-  List<UserData> friends;
+  final UserData userData = null;
+  final List<UserData> friends = [];
 
   @override
   List<Object> get props => [];
@@ -53,6 +53,9 @@ class Loading extends UserState {
   final UserData userData;
   final List<UserData> friends = [];
   Loading(this.userData);
+
+  @override
+  List<Object> get props => [userData];
 }
 
 class Loaded extends UserState {
@@ -105,8 +108,7 @@ class UserBloc extends Bloc<UserEvent,UserState> {
           add(Update(doc,docs));
         }
       });
-      print(event.uid);
-      yield Loading(new UserData(uid: event.uid));
+      yield new Loading(new UserData(uid: event.uid));
     }
   }
 
