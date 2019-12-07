@@ -29,7 +29,6 @@ dependencies:
   flutter_masked_text: ^0.8.0
   flutter_bloc: ^2.1.1
   equatable: ^1.0.1
-  firebase_core: ^0.4.2+1
 
 dev_dependencies:
   flutter_test:
