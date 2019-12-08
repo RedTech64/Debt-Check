@@ -38,10 +38,16 @@ class _HomePageState extends State<HomePage> {
           ),
           actions: <Widget>[
             new IconButton(
+              icon: new Icon(Icons.mode_comment),
+              onPressed: () {
+                BlocProvider.of<CheckBloc>(context).add(StartCheckBloc());
+              },
+            ),
+            new IconButton(
               icon: new Icon(Icons.person),
               onPressed: () => _openFriendsDialog(context),
             ),
-            new IconButton(icon: new Icon(Icons.exit_to_app), onPressed: () {_auth.signOut(); BlocProvider.of<UserBloc>(context).add(UpdateUserBlocUser(null)); Navigator.pushNamed(context, '/signup');}),],
+            new IconButton(icon: new Icon(Icons.exit_to_app), onPressed: () {_auth.signOut(); BlocProvider.of<UserBloc>(context).add(StartUserBloc(null)); Navigator.pushNamed(context, '/signup');}),],
         ),
         body: TabBarView(
           children: <Widget>[

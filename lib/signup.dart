@@ -98,7 +98,7 @@ class _SignupPageState extends State<SignupPage> {
         (AuthCredential phoneAuthCredential) async {
       await _auth.signInWithCredential(phoneAuthCredential);
       FirebaseUser user = await _auth.currentUser();
-      BlocProvider.of<UserBloc>(context).add(new UpdateUserBlocUser(user.uid));
+      BlocProvider.of<UserBloc>(context).add(new StartUserBloc(user.uid));
       DocumentSnapshot userDoc = await Firestore.instance.collection('users').document(BlocProvider.of<UserBloc>(context).state.userData.uid).get();
       if(userDoc.exists) {
         Navigator.pushNamed(context, '/home');
@@ -223,7 +223,7 @@ class _VerificationCodePageState extends State<VerificationCodePage> {
                   ));
                   String result = await _signInWithPhoneNumber();
                   if(result != null) {
-                    BlocProvider.of<UserBloc>(context).add(UpdateUserBlocUser(result));
+                    BlocProvider.of<UserBloc>(context).add(StartUserBloc(result));
                     DocumentSnapshot userDoc = await Firestore.instance.collection('users').document(result).get();
                     if(userDoc.exists) {
                       Navigator.pushNamed(context, '/home');

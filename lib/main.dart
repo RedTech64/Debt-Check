@@ -63,7 +63,8 @@ class _MyAppState extends State<MyApp> {
                   case '/home':
                     _updateFCM();
                     return new MaterialPageRoute(
-                        builder: (_) {
+                        builder: (context) {
+                          BlocProvider.of<CheckBloc>(context).add(StartCheckBloc());
                           return new HomePage();
                         }
                     );
@@ -97,7 +98,6 @@ class _MyAppState extends State<MyApp> {
       Navigator.of(context).pushReplacementNamed('/signup');
     else {
       BlocProvider.of<UserBloc>(context).add(StartUserBloc(user.uid));
-      BlocProvider.of<CheckBloc>(context).add(StartCheckBloc());
       Navigator.of(context).pushReplacementNamed('/home');
     }
   }
