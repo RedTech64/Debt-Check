@@ -50,12 +50,20 @@ class CheckCard extends StatelessWidget {
               children: <Widget>[
                 new Icon(Icons.person, color: Colors.grey,),
                 new Container(width: 4,),
-                new Text(
-                  '${checkData.debitorName}',
-                  style: new TextStyle(
-                    fontSize: 18,
+                if(checkType == CheckType.sent)
+                  new Text(
+                    '${checkData.debitorName}',
+                    style: new TextStyle(
+                      fontSize: 18,
+                    ),
                   ),
-                ),
+                if(checkType == CheckType.received)
+                  new Text(
+                    '${checkData.creditorName}',
+                    style: new TextStyle(
+                      fontSize: 18,
+                    ),
+                  ),
                 new Spacer(flex: 1,),
                 new Text(
                   '\$${checkData.amount.toStringAsFixed(2)}',

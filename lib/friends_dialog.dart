@@ -17,63 +17,55 @@ class FriendsDialog extends StatefulWidget {
 class _FriendsDialogState extends State<FriendsDialog> {
   String uid;
   UserBloc userBloc;
-  List<UserData> friendData;
   _FriendsDialogState(this.uid,this.userBloc);
   
   @override
   Widget build(BuildContext context) {
-    friendData = userBloc.state.friends;
-    return new AlertDialog(
-      title: Row(
-        children: <Widget>[
-          new Text('Friends'),
-          new IconButton(
-            icon: new Icon(Icons.add),
-            onPressed: () async {
-              UserData friendUID = await showSearch<UserData>(
-                context: context,
-                delegate: new UserSearchDelegate(exclude: [BlocProvider.of<UserBloc>(context).state.userData.uid, ...friendData.map((user) => user.uid)],),
-              );
-              if(friendUID != null)
-                Firestore.instance.collection('users').document(BlocProvider.of<UserBloc>(context).state.userData.uid).updateData({
-                  'friends': FieldValue.arrayUnion([friendUID]),
-                });
-            },
+    return new BlocBuilder<UserBloc, UserState>(
+      builder: (context,state) {
+        return new AlertDialog(
+          title: Row(
+            children: <Widget>[
+              new Text('Friends'),
+              new IconButton(
+                icon: new Icon(Icons.add),
+                onPressed: () async {
+                  UserData newFriend = await showSearch<UserData>(
+                    context: context,
+                    delegate: new UserSearchDelegate(exclude: [BlocProvider.of<UserBloc>(context).state.userData.uid, ...state.friends.map((user) => user.uid)],),
+                  );
+                  if(newFriend != null && state.friends.where((friend) => friend.uid == newFriend.uid).length == 0)
+                    Firestore.instance.collection('users').document(BlocProvider.of<UserBloc>(context).state.userData.uid).updateData({
+                      'friends': FieldValue.arrayUnion([newFriend.uid]),
+                    });
+                },
+              ),
+            ],
           ),
-        ],
-      ),
-      content: _getContent(),
+          content: _getContent(state),
+        );
+      },
     );
   }
 
-  Widget _getContent() {
-    if(friendData == null)
+  Widget _getContent(UserState state) {
+    if(state.friends == null)
       return new CircularProgressIndicator();
-    else if(friendData.isEmpty)
+    else if(state.friends.isEmpty)
       return new Text('No friends!');
     else
       return Container(
         width: 200,
         child: new ListView.builder(
           shrinkWrap: true,
-          itemCount: friendData.length,
+          itemCount: state.friends.length,
           itemBuilder: (context, index) {
             return new ListTile(
-              title: new Text(friendData[index].fullName),
-              subtitle: new Text('@${friendData[index].username}'),
+              title: new Text(state.friends[index].fullName),
+              subtitle: new Text('@${state.friends[index].username}'),
             );
           },
         ),
       );
-  }
-
-  Future<List<DocumentSnapshot>> _getFriendData(DocumentSnapshot userDoc) async {
-    List<Future<DocumentSnapshot>> futures = [];
-    var userIds = userDoc.data['friends'];
-    userIds.forEach((id) {
-      futures.add(Firestore.instance.collection('users').document(id).get());
-    });
-    List<DocumentSnapshot> docs = await Future.wait(futures);
-    return docs;
   }
 }
