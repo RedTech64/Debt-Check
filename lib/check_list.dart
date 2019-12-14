@@ -12,6 +12,7 @@ class CheckList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return new ListView.builder(
+      shrinkWrap: true,
       itemCount: checks.length,
       itemBuilder: (context, index) {
         if(BlocProvider.of<UserBloc>(context).state.userData.uid == checks[index].creditorUID)

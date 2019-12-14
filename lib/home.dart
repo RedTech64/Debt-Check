@@ -6,6 +6,7 @@ import 'package:debtcheck/check_create_dialog.dart';
 import 'package:debtcheck/check_list.dart';
 import 'package:debtcheck/friends_dialog.dart';
 import 'package:debtcheck/friend_tab.dart';
+import 'package:debtcheck/profile_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -38,13 +39,11 @@ class _HomePageState extends State<HomePage> {
           ),
           actions: <Widget>[
             new IconButton(
-              icon: new Icon(Icons.mode_comment),
-              onPressed: () {
-                BlocProvider.of<CheckBloc>(context).add(StartCheckBloc());
-              },
+              icon: new Icon(Icons.person),
+              onPressed: () => _openProfileDialog(context),
             ),
             new IconButton(
-              icon: new Icon(Icons.person),
+              icon: new Icon(Icons.people),
               onPressed: () => _openFriendsDialog(context),
             ),
             new IconButton(icon: new Icon(Icons.exit_to_app), onPressed: () {_auth.signOut(); BlocProvider.of<UserBloc>(context).add(StartUserBloc(null)); Navigator.pushNamed(context, '/signup');}),],
@@ -103,8 +102,18 @@ class _HomePageState extends State<HomePage> {
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return new FriendsDialog(BlocProvider.of<UserBloc>(context).state.userData.uid,userBloc);
+        return new FriendsDialog(userBloc);
       }
+    );
+  }
+
+  void _openProfileDialog(context) {
+    UserBloc userBloc = BlocProvider.of<UserBloc>(context);
+    showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return new ProfileDialog(userBloc.state.userData);
+        }
     );
   }
 }
@@ -134,10 +143,12 @@ class UserData {
   String username;
   String uid;
   List<String> friendUIDs;
+  double credit;
+  double debt;
 
-  UserData({this.firstName,this.lastName,this.fullName,this.username,this.uid,this.friendUIDs});
+  UserData({this.firstName,this.lastName,this.fullName,this.username,this.uid,this.friendUIDs,this.credit,this.debt});
 
   factory UserData.fromDoc(DocumentSnapshot doc) {
-    return new UserData(firstName: doc.data['firstName'], lastName: doc.data['lastName'], fullName: doc.data['fullName'], username: doc.data['username'], uid: doc.data['uid'], friendUIDs: new List<String>.from(doc.data['friends']));
+    return new UserData(firstName: doc.data['firstName'], lastName: doc.data['lastName'], fullName: doc.data['fullName'], username: doc.data['username'], uid: doc.data['uid'], friendUIDs: new List<String>.from(doc.data['friends'],), credit: doc.data['credit'].toDouble(), debt: doc.data['debt'].toDouble());
   }
 }

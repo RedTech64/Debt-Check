@@ -41,47 +41,61 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return new BlocProvider(
-      builder: (BuildContext context) => UserBloc(),
+      create: (BuildContext context) => UserBloc(),
       child: new Builder(
         builder: (BuildContext context) {
-          return BlocProvider<CheckBloc>(
-            builder: (BuildContext context) => CheckBloc(userBloc: BlocProvider.of<UserBloc>(context)),
-            child: MaterialApp(
-              title: 'Debt Check',
-              theme: ThemeData(
-                primarySwatch: Colors.blue,
-              ),
-              initialRoute: start,
-              onGenerateRoute: (RouteSettings settings) {
-                switch(settings.name) {
-                  case '/signup':
-                    return new MaterialPageRoute(
-                        builder: (_) {
-                          return new SignupPage();
-                        }
-                    );
-                  case '/home':
-                    _updateFCM();
-                    return new MaterialPageRoute(
-                        builder: (context) {
-                          BlocProvider.of<CheckBloc>(context).add(StartCheckBloc());
-                          return new HomePage();
-                        }
-                    );
-                  default:
-                    return new MaterialPageRoute(
-                        builder: (context) {
-                          _checkSignin(context);
-                          return new CircularProgressIndicator();
-                        }
-                    );
-                }
-              },
-            ),
+          return BlocBuilder<UserBloc,UserState>(
+            builder: (context, state) {
+              return BlocProvider<CheckBloc>(
+                create: (BuildContext context) => CheckBloc(userBloc: BlocProvider.of<UserBloc>(context)),
+                child: MaterialApp(
+                  title: 'Debt Check',
+                  theme: _getTheme(state),
+                  initialRoute: start,
+                  onGenerateRoute: (RouteSettings settings) {
+                    switch(settings.name) {
+                      case '/signup':
+                        return new MaterialPageRoute(
+                            builder: (_) {
+                              return new SignupPage();
+                            }
+                        );
+                      case '/home':
+                        _updateFCM();
+                        return new MaterialPageRoute(
+                            builder: (context) {
+                              BlocProvider.of<CheckBloc>(context).add(StartCheckBloc());
+                              return new HomePage();
+                            }
+                        );
+                      default:
+                        return new MaterialPageRoute(
+                            builder: (context) {
+                              _checkSignin(context);
+                              return new CircularProgressIndicator();
+                            }
+                        );
+                    }
+                  },
+                ),
+              );
+            }
           );
         },
       ),
     );
+  }
+
+  ThemeData _getTheme(UserState state) {
+    UserData userData = state.userData;
+    if(userData.uid == null || userData.debt < userData.credit)
+      return new ThemeData(
+        primaryColor: Colors.green,
+      );
+    else
+      return new ThemeData(
+        primaryColor: Colors.red,
+      );
   }
 
   void _updateFCM() async {

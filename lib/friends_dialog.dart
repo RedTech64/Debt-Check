@@ -7,17 +7,16 @@ import 'home.dart';
 import 'bloc/user_bloc.dart';
 
 class FriendsDialog extends StatefulWidget {
-  String uid;
   UserBloc userBloc;
-  FriendsDialog(this.uid,this.userBloc);
+  FriendsDialog(this.userBloc);
   @override
-  _FriendsDialogState createState() => _FriendsDialogState(this.uid,this.userBloc);
+  _FriendsDialogState createState() => _FriendsDialogState(this.userBloc);
 }
 
 class _FriendsDialogState extends State<FriendsDialog> {
-  String uid;
   UserBloc userBloc;
-  _FriendsDialogState(this.uid,this.userBloc);
+  List<UserData> friendData;
+  _FriendsDialogState(this.userBloc);
   
   @override
   Widget build(BuildContext context) {
