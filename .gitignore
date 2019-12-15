@@ -42,3 +42,7 @@ android/key.properties
 ios/Runner/GoogleService-Info\.plist
 
 .flutter-plugins-dependencies
+
+ios/Podfile.lock
+
+ios/Podfile
