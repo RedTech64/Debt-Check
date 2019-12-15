@@ -32,47 +32,42 @@ class UserSearchDelegate extends SearchDelegate<UserData> {
 
   @override
   Widget buildSuggestions(BuildContext context) {
+    return new FutureBuilder<List<UserData>>(
+      future: searchUsers(),
+      builder: (context, future) {
+        if(future.connectionState == ConnectionState.waiting)
+          return new CircularProgressIndicator();
+        future.data.removeWhere((user) => exclude.contains(user.uid));
+        return new ListView.builder(
+          itemCount: future.data.length,
+          itemBuilder: (context, index) => _getUserCard(future.data[index], context),
+        );
+      },
+    );
+  }
+
+  Future<List<UserData>> searchUsers() async {
     if(query == "") {
       if(defaultList == null || defaultList.isEmpty)
-        return new Container();
+        return [];
       List<Future<DocumentSnapshot>> futures = [];
       defaultList.forEach((uid) {
         futures.add(Firestore.instance.collection('users').document(uid).get());
       });
-      return new FutureBuilder<List<DocumentSnapshot>>(
-        future: Future.wait(futures),
-        builder: (context, future) {
-          if(future.connectionState == ConnectionState.waiting)
-            return new CircularProgressIndicator();
-          return ListView.builder(
-            itemCount: future.data.length,
-            itemBuilder: (context, index) => _getUserCard(future.data[index], context),
-          );
-        },
-      );
+      List<DocumentSnapshot> docs = await Future.wait(futures);
+      return docs.map((doc) => new UserData.fromDoc(doc));
     } else {
-      return new FutureBuilder<QuerySnapshot>(
-        future: Firestore.instance.collection('users').where('searchTerms.'+query.toLowerCase(), isEqualTo: true).limit(5).getDocuments(),
-        builder: (context, future) {
-          if(future.connectionState == ConnectionState.waiting)
-            return new CircularProgressIndicator();
-          List<DocumentSnapshot> queryDocs = future.data.documents;
-          queryDocs.removeWhere((doc) => exclude.contains(doc.documentID));
-          return new ListView.builder(
-            itemCount: queryDocs.length,
-            itemBuilder: (context, index) => _getUserCard(queryDocs[index], context),
-          );
-        },
-      );
+      QuerySnapshot docs = await Firestore.instance.collection('users').where('searchTerms.'+query.toLowerCase(), isEqualTo: true).limit(5).getDocuments();
+      return docs.documents.map((doc) => new UserData.fromDoc(doc)).toList();
     }
   }
 
-  Widget _getUserCard(DocumentSnapshot userDoc, context) {
+  Widget _getUserCard(UserData userData, context) {
       return new ListTile(
-        title: new Text(userDoc['fullName']),
-        subtitle: new Text('@'+userDoc['username']),
+        title: new Text(userData.fullName),
+        subtitle: new Text('@'+userData.username),
         onTap: () {
-          close(context, new UserData(firstName: userDoc.data['firstName'], lastName: userDoc.data['lastName'], fullName: userDoc.data['fullName'], username: userDoc.data['username'], uid: userDoc.data['uid']));
+          close(context, userData);
         },
       );
   }

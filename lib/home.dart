@@ -67,28 +67,30 @@ class _HomePageState extends State<HomePage> {
   }
 
   void _openCreateCheckDialog(UserData userData) async {
-    CheckData checkData = await Navigator.of(context).push(
+    List<CheckData> checks = await Navigator.of(context).push(
       new MaterialPageRoute(
         builder: (BuildContext context) => new CheckCreateDialog(),
       ),
     );
-    if(checkData != null) {
-      if(!userData.friendUIDs.contains(checkData.debitorUID)) {
-        Firestore.instance.collection('users').document(userData.uid).updateData({
-          'friends': FieldValue.arrayUnion([checkData.debitorUID]),
+    if(checks != null) {
+      for(CheckData checkData in checks) {
+        if(!userData.friendUIDs.contains(checkData.debitorUID)) {
+          Firestore.instance.collection('users').document(userData.uid).updateData({
+            'friends': FieldValue.arrayUnion([checkData.debitorUID]),
+          });
+        }
+        Firestore.instance.collection('checks').add({
+          'description': checkData.description,
+          'amount': checkData.amount,
+          'date': Timestamp.fromDate(checkData.date),
+          'creditorName': userData.fullName,
+          'creditorUID': userData.uid,
+          'debitorName': checkData.debitorName,
+          'debitorUID': checkData.debitorUID,
+          'involved': [userData.uid, checkData.debitorUID],
+          'paid': false,
         });
       }
-      Firestore.instance.collection('checks').add({
-        'description': checkData.description,
-        'amount': checkData.amount,
-        'date': Timestamp.fromDate(checkData.date),
-        'creditorName': userData.fullName,
-        'creditorUID': userData.uid,
-        'debitorName': checkData.debitorName,
-        'debitorUID': checkData.debitorUID,
-        'involved': [userData.uid, checkData.debitorUID],
-        'paid': false,
-      });
     }
   }
 
