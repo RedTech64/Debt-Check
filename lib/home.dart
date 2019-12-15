@@ -4,7 +4,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:debtcheck/bloc/user_bloc.dart';
 import 'package:debtcheck/check_create_dialog.dart';
 import 'package:debtcheck/check_list.dart';
-import 'package:debtcheck/friends_dialog.dart';
 import 'package:debtcheck/friend_tab.dart';
 import 'package:debtcheck/profile_dialog.dart';
 import 'package:flutter/material.dart';
@@ -41,10 +40,6 @@ class _HomePageState extends State<HomePage> {
             new IconButton(
               icon: new Icon(Icons.person),
               onPressed: () => _openProfileDialog(context),
-            ),
-            new IconButton(
-              icon: new Icon(Icons.people),
-              onPressed: () => _openFriendsDialog(context),
             ),
             new IconButton(icon: new Icon(Icons.exit_to_app), onPressed: () {_auth.signOut(); BlocProvider.of<UserBloc>(context).add(StartUserBloc(null)); Navigator.pushNamed(context, '/signup');}),],
         ),
@@ -95,16 +90,6 @@ class _HomePageState extends State<HomePage> {
         'paid': false,
       });
     }
-  }
-
-  void _openFriendsDialog(context) {
-    UserBloc userBloc = BlocProvider.of<UserBloc>(context);
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return new FriendsDialog(userBloc);
-      }
-    );
   }
 
   void _openProfileDialog(context) {
