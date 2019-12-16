@@ -371,8 +371,8 @@ class _UserInfoPageState extends State<UserInfoPage> {
             RaisedButton(
               onPressed: () async {
                 if(_formKey.currentState.validate()) {
-                  await _createUserDoc(BlocProvider.of<UserBloc>(context).state.userData.uid);
-                  Navigator.pushNamed(context, '/home');
+                  await _createUserDoc(uid);
+                  Navigator.pushNamed(context, '/home', arguments: uid);
                 }
               },
               child: const Text('Done'),
