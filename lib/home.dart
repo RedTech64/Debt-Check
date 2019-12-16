@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:after_layout/after_layout.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:debtcheck/bloc/user_bloc.dart';
 import 'package:debtcheck/check_create_dialog.dart';
@@ -11,6 +12,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'bloc/check_bloc.dart';
+import 'package:flutter/scheduler.dart';
 
 FirebaseAuth _auth = FirebaseAuth.instance;
 
@@ -24,15 +26,9 @@ class _HomePageState extends State<HomePage> {
   List<CheckData> checks = [];
 
   @override
-  void initState() {
-    super.initState();
-  }
-
-  @override
   Widget build(BuildContext context) {
     return new BlocBuilder<UserBloc,UserState>(
       builder: (context, state) {
-        //_updateTheme(state,context);
         return new DefaultTabController(
           length: 3,
           child: Scaffold(
@@ -50,8 +46,7 @@ class _HomePageState extends State<HomePage> {
                   icon: new Icon(Icons.person),
                   onPressed: () => _openProfileDialog(context),
                 ),
-                new IconButton(icon: new Icon(Icons.exit_to_app), onPressed: () {_auth.signOut(); BlocProvider.of<UserBloc>(context).add(StartUserBloc(null)); Navigator.pushNamed(context, '/signup');}),
-                new IconButton(icon: new Icon(Icons.add), onPressed: () {print(BlocProvider.of<UserBloc>(context).state.userData.debt);}),
+                new IconButton(icon: new Icon(Icons.exit_to_app), onPressed: () {_auth.signOut(); BlocProvider.of<UserBloc>(context).add(StartUserBloc(null,null)); Navigator.pushNamed(context, '/signup');}),
               ],
             ),
             body: TabBarView(
@@ -79,16 +74,10 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  void _updateTheme(UserState state,context) {
-    UserData userData = state.userData;
-    if((userData.uid == null || userData.debt == null || userData.credit == null || userData.debt <= userData.credit) && Theme.of(context).primaryColor != Colors.green)
-      DynamicTheme.of(context).setThemeData(new ThemeData(
-          primarySwatch: Colors.green,
-      ));
-    else if(Theme.of(context).primaryColor != Colors.red)
-      DynamicTheme.of(context).setThemeData(new ThemeData(
-        primarySwatch: Colors.red,
-      ));
+  void _updateTheme(Color color,context) {
+    DynamicTheme.of(context).setThemeData(new ThemeData(
+      primarySwatch: color,
+    ));
   }
 
   void _openCreateCheckDialog(UserData userData) async {

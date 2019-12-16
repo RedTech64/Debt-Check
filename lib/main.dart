@@ -70,7 +70,7 @@ class _MyAppState extends State<MyApp> {
                         _updateFCM(settings.arguments);
                         return new MaterialPageRoute(
                             builder: (context) {
-                              BlocProvider.of<UserBloc>(context).add(StartUserBloc(settings.arguments));
+                              BlocProvider.of<UserBloc>(context).add(StartUserBloc(settings.arguments,context));
                               BlocProvider.of<CheckBloc>(context).add(StartCheckBloc());
                               return new HomePage();
                             }
@@ -94,7 +94,6 @@ class _MyAppState extends State<MyApp> {
   }
 
   void _updateFCM(String uid) async {
-    print(uid);
     String token = await _firebaseMessaging.getToken();
     Firestore.instance.collection('users').document(uid).updateData({
       'fcmToken': token,
