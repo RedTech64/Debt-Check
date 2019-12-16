@@ -1,8 +1,11 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/services.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:image_picker/image_picker.dart';
 import 'bloc/check_bloc.dart';
 import 'bloc/user_bloc.dart';
 
@@ -98,15 +101,14 @@ class _SignupPageState extends State<SignupPage> {
         (AuthCredential phoneAuthCredential) async {
       await _auth.signInWithCredential(phoneAuthCredential);
       FirebaseUser user = await _auth.currentUser();
-      BlocProvider.of<UserBloc>(context).add(new StartUserBloc(user.uid));
-      DocumentSnapshot userDoc = await Firestore.instance.collection('users').document(BlocProvider.of<UserBloc>(context).state.userData.uid).get();
+      DocumentSnapshot userDoc = await Firestore.instance.collection('users').document(user.uid).get();
       if(userDoc.exists) {
         Navigator.pushNamed(context, '/home');
       } else {
         Navigator.of(context).pushReplacement(
           new MaterialPageRoute(
               builder: (BuildContext context) {
-                return new UserInfoPage();
+                return new UserInfoPage(user.uid);
               }
           ),
         );
@@ -223,15 +225,14 @@ class _VerificationCodePageState extends State<VerificationCodePage> {
                   ));
                   String result = await _signInWithPhoneNumber();
                   if(result != null) {
-                    BlocProvider.of<UserBloc>(context).add(StartUserBloc(result));
                     DocumentSnapshot userDoc = await Firestore.instance.collection('users').document(result).get();
                     if(userDoc.exists) {
-                      Navigator.pushNamed(context, '/home');
+                      Navigator.pushNamed(context, '/home', arguments: result);
                     } else {
                       Navigator.of(context).pushReplacement(
                         new MaterialPageRoute(
                             builder: (BuildContext context) {
-                              return new UserInfoPage();
+                              return new UserInfoPage(result);
                             }
                         ),
                       );
@@ -276,16 +277,20 @@ class _VerificationCodePageState extends State<VerificationCodePage> {
 }
 
 class UserInfoPage extends StatefulWidget {
+  final String uid;
+  UserInfoPage(this.uid);
   @override
-  _UserInfoPageState createState() => _UserInfoPageState();
+  _UserInfoPageState createState() => _UserInfoPageState(this.uid);
 }
 
 class _UserInfoPageState extends State<UserInfoPage> {
+  String uid;
   TextEditingController _firstNameController = new TextEditingController();
   TextEditingController _lastNameController = new TextEditingController();
   TextEditingController _usernameController = new TextEditingController();
   final _formKey = GlobalKey<FormState>();
   bool _taken = false;
+  _UserInfoPageState(this.uid);
 
   @override
   Widget build(BuildContext context) {

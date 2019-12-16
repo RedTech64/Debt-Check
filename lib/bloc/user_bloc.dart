@@ -31,7 +31,7 @@ class Update extends UserEvent {
 }
 
 abstract class UserState extends Equatable {
-  final UserData userData = null;
+  final UserData userData = new UserData();
   final List<UserData> friends = [];
 
   @override
@@ -76,13 +76,15 @@ class UserBloc extends Bloc<UserEvent,UserState> {
       if(event.uid != null && event.uid != "") {
         subscription?.cancel();
         subscription = Firestore.instance.collection('users').document(event.uid).snapshots().listen((doc) async {
-          List<Future<DocumentSnapshot>> futures = [];
-          var userIds = doc.data['friends'];
-          userIds.forEach((id) {
-            futures.add(Firestore.instance.collection('users').document(id).get());
-          });
-          List<DocumentSnapshot> docs = await Future.wait(futures);
-          add(Update(doc,docs));
+          if(doc.exists) {
+            List<Future<DocumentSnapshot>> futures = [];
+            var userIds = doc.data['friends'];
+            userIds.forEach((id) {
+              futures.add(Firestore.instance.collection('users').document(id).get());
+            });
+            List<DocumentSnapshot> docs = await Future.wait(futures);
+            add(Update(doc,docs));
+          }
         });
         yield InitialState(new UserData(uid: event.uid));
       }

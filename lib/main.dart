@@ -44,42 +44,38 @@ class _MyAppState extends State<MyApp> {
       create: (BuildContext context) => UserBloc(),
       child: new Builder(
         builder: (BuildContext context) {
-          return BlocBuilder<UserBloc,UserState>(
-            builder: (context, state) {
-              return BlocProvider<CheckBloc>(
-                create: (BuildContext context) => CheckBloc(userBloc: BlocProvider.of<UserBloc>(context)),
-                child: MaterialApp(
-                  title: 'Debt Check',
-                  theme: _getTheme(state),
-                  initialRoute: start,
-                  onGenerateRoute: (RouteSettings settings) {
-                    switch(settings.name) {
-                      case '/signup':
-                        return new MaterialPageRoute(
-                            builder: (_) {
-                              return new SignupPage();
-                            }
-                        );
-                      case '/home':
-                        _updateFCM();
-                        return new MaterialPageRoute(
-                            builder: (context) {
-                              BlocProvider.of<CheckBloc>(context).add(StartCheckBloc());
-                              return new HomePage();
-                            }
-                        );
-                      default:
-                        return new MaterialPageRoute(
-                            builder: (context) {
-                              _checkSignin(context);
-                              return new CircularProgressIndicator();
-                            }
-                        );
-                    }
-                  },
-                ),
-              );
-            }
+          return BlocProvider<CheckBloc>(
+            create: (BuildContext context) => CheckBloc(userBloc: BlocProvider.of<UserBloc>(context)),
+            child: MaterialApp(
+              title: 'Debt Check',
+              initialRoute: start,
+              onGenerateRoute: (RouteSettings settings) {
+                switch(settings.name) {
+                  case '/signup':
+                    return new MaterialPageRoute(
+                        builder: (_) {
+                          return new SignupPage();
+                        }
+                    );
+                  case '/home':
+                    _updateFCM(settings.arguments);
+                    return new MaterialPageRoute(
+                        builder: (context) {
+                          BlocProvider.of<UserBloc>(context).add(StartUserBloc(settings.arguments));
+                          BlocProvider.of<CheckBloc>(context).add(StartCheckBloc());
+                          return new HomePage();
+                        }
+                    );
+                  default:
+                    return new MaterialPageRoute(
+                        builder: (context) {
+                          _checkSignin(context);
+                          return new CircularProgressIndicator();
+                        }
+                    );
+                }
+              },
+            ),
           );
         },
       ),
@@ -88,7 +84,7 @@ class _MyAppState extends State<MyApp> {
 
   ThemeData _getTheme(UserState state) {
     UserData userData = state.userData;
-    if(userData.uid == null || userData.debt < userData.credit)
+    if(userData.uid == null || userData.debt <= userData.credit)
       return new ThemeData(
         primaryColor: Colors.green,
       );
@@ -98,21 +94,24 @@ class _MyAppState extends State<MyApp> {
       );
   }
 
-  void _updateFCM() async {
+  void _updateFCM(String uid) async {
+    print(uid);
     String token = await _firebaseMessaging.getToken();
-    FirebaseUser user = await _auth.currentUser();
-    Firestore.instance.collection('users').document(user.uid).updateData({
+    Firestore.instance.collection('users').document(uid).updateData({
       'fcmToken': token,
     });
   }
 
   void _checkSignin(context) async {
     FirebaseUser user = await _auth.currentUser();
-    if(user == null || user.uid == null)
+    if(user == null || user.uid == null) {
       Navigator.of(context).pushReplacementNamed('/signup');
-    else {
-      BlocProvider.of<UserBloc>(context).add(StartUserBloc(user.uid));
-      Navigator.of(context).pushReplacementNamed('/home');
+    } else {
+      DocumentSnapshot userDoc = await Firestore.instance.collection('users').document(user.uid).get();
+      if(!userDoc.exists)
+        Navigator.of(context).pushReplacementNamed('/signup');
+      else
+        Navigator.of(context).pushReplacementNamed('/home', arguments: user.uid);
     }
   }
 }
