@@ -33,6 +33,7 @@ dependencies:
   intl: ^0.15.8
   image_picker: ^0.6.2+3
   simple_image_crop: ^0.1.2
+  dynamic_theme: ^1.0.0
 
 dev_dependencies:
   flutter_test:

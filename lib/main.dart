@@ -7,6 +7,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'bloc/check_bloc.dart';
 import 'bloc/user_bloc.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:dynamic_theme/dynamic_theme.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -46,52 +47,50 @@ class _MyAppState extends State<MyApp> {
         builder: (BuildContext context) {
           return BlocProvider<CheckBloc>(
             create: (BuildContext context) => CheckBloc(userBloc: BlocProvider.of<UserBloc>(context)),
-            child: MaterialApp(
-              title: 'Debt Check',
-              initialRoute: start,
-              onGenerateRoute: (RouteSettings settings) {
-                switch(settings.name) {
-                  case '/signup':
-                    return new MaterialPageRoute(
-                        builder: (_) {
-                          return new SignupPage();
-                        }
-                    );
-                  case '/home':
-                    _updateFCM(settings.arguments);
-                    return new MaterialPageRoute(
-                        builder: (context) {
-                          BlocProvider.of<UserBloc>(context).add(StartUserBloc(settings.arguments));
-                          BlocProvider.of<CheckBloc>(context).add(StartCheckBloc());
-                          return new HomePage();
-                        }
-                    );
-                  default:
-                    return new MaterialPageRoute(
-                        builder: (context) {
-                          _checkSignin(context);
-                          return new CircularProgressIndicator();
-                        }
-                    );
-                }
+            child: DynamicTheme(
+              defaultBrightness: Brightness.light,
+              data: (brightness) => new ThemeData(
+                primarySwatch: Colors.green,
+                brightness: brightness,
+              ),
+              themedWidgetBuilder: (context, theme) {
+                return MaterialApp(
+                  title: 'Debt Check',
+                  initialRoute: start,
+                  theme: theme,
+                  onGenerateRoute: (RouteSettings settings) {
+                    switch(settings.name) {
+                      case '/signup':
+                        return new MaterialPageRoute(
+                            builder: (_) {
+                              return new SignupPage();
+                            }
+                        );
+                      case '/home':
+                        _updateFCM(settings.arguments);
+                        return new MaterialPageRoute(
+                            builder: (context) {
+                              BlocProvider.of<UserBloc>(context).add(StartUserBloc(settings.arguments));
+                              BlocProvider.of<CheckBloc>(context).add(StartCheckBloc());
+                              return new HomePage();
+                            }
+                        );
+                      default:
+                        return new MaterialPageRoute(
+                            builder: (context) {
+                              _checkSignin(context);
+                              return new CircularProgressIndicator();
+                            }
+                        );
+                    }
+                  },
+                );
               },
             ),
           );
         },
       ),
     );
-  }
-
-  ThemeData _getTheme(UserState state) {
-    UserData userData = state.userData;
-    if(userData.uid == null || userData.debt <= userData.credit)
-      return new ThemeData(
-        primaryColor: Colors.green,
-      );
-    else
-      return new ThemeData(
-        primaryColor: Colors.red,
-      );
   }
 
   void _updateFCM(String uid) async {

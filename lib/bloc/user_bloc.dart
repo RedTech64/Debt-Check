@@ -61,7 +61,7 @@ class Loaded extends UserState {
   Loaded(this.userData,this.friends,this.uid);
 
   @override
-  List<Object> get props => [friends];
+  List<Object> get props => [friends,userData,uid];
 }
 
 class UserBloc extends Bloc<UserEvent,UserState> {

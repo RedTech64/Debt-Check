@@ -6,6 +6,7 @@ import 'package:debtcheck/check_create_dialog.dart';
 import 'package:debtcheck/check_list.dart';
 import 'package:debtcheck/friend_tab.dart';
 import 'package:debtcheck/profile_dialog.dart';
+import 'package:dynamic_theme/dynamic_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -23,47 +24,71 @@ class _HomePageState extends State<HomePage> {
   List<CheckData> checks = [];
 
   @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return new DefaultTabController(
-      length: 3,
-      child: Scaffold(
-        appBar: AppBar(
-          title: Text("Debt Check"),
-          bottom: new TabBar(
-            tabs: <Widget>[
-              Tab(icon: new Icon(Icons.person), text: 'Friends',),
-              Tab(icon: new Icon(Icons.arrow_downward), text: 'Received',),
-              Tab(icon: new Icon(Icons.arrow_upward), text: 'Sent',),
-            ],
+    return new BlocBuilder<UserBloc,UserState>(
+      builder: (context, state) {
+        //_updateTheme(state,context);
+        return new DefaultTabController(
+          length: 3,
+          child: Scaffold(
+            appBar: AppBar(
+              title: Text("Debt Check"),
+              bottom: new TabBar(
+                tabs: <Widget>[
+                  Tab(icon: new Icon(Icons.person), text: 'Friends',),
+                  Tab(icon: new Icon(Icons.arrow_downward), text: 'Received',),
+                  Tab(icon: new Icon(Icons.arrow_upward), text: 'Sent',),
+                ],
+              ),
+              actions: <Widget>[
+                new IconButton(
+                  icon: new Icon(Icons.person),
+                  onPressed: () => _openProfileDialog(context),
+                ),
+                new IconButton(icon: new Icon(Icons.exit_to_app), onPressed: () {_auth.signOut(); BlocProvider.of<UserBloc>(context).add(StartUserBloc(null)); Navigator.pushNamed(context, '/signup');}),
+                new IconButton(icon: new Icon(Icons.add), onPressed: () {print(BlocProvider.of<UserBloc>(context).state.userData.debt);}),
+              ],
+            ),
+            body: TabBarView(
+              children: <Widget>[
+                new FriendsTab(),
+                BlocBuilder<CheckBloc,CheckState>(
+                  builder: (context, state) {
+                    return new CheckList(state.received);
+                  },
+                ),
+                BlocBuilder<CheckBloc,CheckState>(
+                  builder: (context, state) {
+                    return new CheckList(state.sent);
+                  },
+                ),
+              ],
+            ),
+            floatingActionButton: new FloatingActionButton(
+              child: new Icon(Icons.send),
+              onPressed: () => _openCreateCheckDialog(BlocProvider.of<UserBloc>(context).state.userData),
+            ),
           ),
-          actions: <Widget>[
-            new IconButton(
-              icon: new Icon(Icons.person),
-              onPressed: () => _openProfileDialog(context),
-            ),
-            new IconButton(icon: new Icon(Icons.exit_to_app), onPressed: () {_auth.signOut(); BlocProvider.of<UserBloc>(context).add(StartUserBloc(null)); Navigator.pushNamed(context, '/signup');}),],
-        ),
-        body: TabBarView(
-          children: <Widget>[
-            new FriendsTab(),
-            BlocBuilder<CheckBloc,CheckState>(
-              builder: (context, state) {
-                return new CheckList(state.received);
-              },
-            ),
-            BlocBuilder<CheckBloc,CheckState>(
-              builder: (context, state) {
-                return new CheckList(state.sent);
-              },
-            ),
-          ],
-        ),
-        floatingActionButton: new FloatingActionButton(
-          child: new Icon(Icons.send),
-          onPressed: () => _openCreateCheckDialog(BlocProvider.of<UserBloc>(context).state.userData),
-        ),
-      ),
+        );
+      },
     );
+  }
+
+  void _updateTheme(UserState state,context) {
+    UserData userData = state.userData;
+    if((userData.uid == null || userData.debt == null || userData.credit == null || userData.debt <= userData.credit) && Theme.of(context).primaryColor != Colors.green)
+      DynamicTheme.of(context).setThemeData(new ThemeData(
+          primarySwatch: Colors.green,
+      ));
+    else if(Theme.of(context).primaryColor != Colors.red)
+      DynamicTheme.of(context).setThemeData(new ThemeData(
+        primarySwatch: Colors.red,
+      ));
   }
 
   void _openCreateCheckDialog(UserData userData) async {
