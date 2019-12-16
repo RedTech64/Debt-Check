@@ -31,6 +31,12 @@
 			</array>
 		</dict>
 	</array>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Photo library may be needed for profile picture.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Camera may be needed for profile picture.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Microphone may be needed for profile picture.</string>
 	<key>CFBundleVersion</key>
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
 	<key>LSRequiresIPhoneOS</key>
