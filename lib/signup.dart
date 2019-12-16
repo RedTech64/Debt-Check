@@ -1,11 +1,13 @@
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/services.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:simple_image_crop/simple_image_crop.dart';
 import 'bloc/check_bloc.dart';
 import 'bloc/user_bloc.dart';
 
@@ -290,6 +292,7 @@ class _UserInfoPageState extends State<UserInfoPage> {
   TextEditingController _usernameController = new TextEditingController();
   final _formKey = GlobalKey<FormState>();
   bool _taken = false;
+  File profilePic;
   _UserInfoPageState(this.uid);
 
   @override
@@ -368,6 +371,19 @@ class _UserInfoPageState extends State<UserInfoPage> {
                 },
               ),
             ),
+            new Row(
+              children: <Widget>[
+                new Text('Profile Picture: '),
+                if(profilePic == null)
+                  new Text('None'),
+                if(profilePic != null)
+                  new CircleAvatar(backgroundImage: FileImage(profilePic),),
+                new IconButton(
+                  icon: new Icon(Icons.edit),
+                  onPressed: () => _selectImage(),
+                ),
+              ],
+            ),
             RaisedButton(
               onPressed: () async {
                 if(_formKey.currentState.validate()) {
@@ -384,6 +400,37 @@ class _UserInfoPageState extends State<UserInfoPage> {
         ),
       ),
     );
+  }
+
+  void _selectImage() async {
+    File image = await ImagePicker.pickImage(
+      source: ImageSource.gallery,
+    );
+    File cropped = await Navigator.of(context).push(
+      new MaterialPageRoute(
+        builder: (BuildContext context) {
+          final imgCropKey = GlobalKey<ImgCropState>();
+          return Scaffold(
+            body: new ImgCrop(
+              key: imgCropKey,
+              chipShape: 'circle',
+              chipRadius: 150,
+              image: FileImage(image),
+            ),
+            floatingActionButton: new FloatingActionButton(
+              child: new Icon(Icons.save),
+              onPressed: () async {
+                File file = await imgCropKey.currentState.cropCompleted(image, pictureQuality: 900);
+                Navigator.of(context).pop(file);
+              },
+            ),
+          );
+        }
+      )
+    );
+    setState(() {
+      profilePic = cropped;
+    });
   }
 
   bool _usernameExists(String value) {
