@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:after_layout/after_layout.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:debtcheck/bloc/user_bloc.dart';
 import 'package:debtcheck/check_create_dialog.dart';
