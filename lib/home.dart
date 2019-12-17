@@ -11,7 +11,6 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'bloc/check_bloc.dart';
-import 'package:flutter/scheduler.dart';
 
 FirebaseAuth _auth = FirebaseAuth.instance;
 

@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -445,7 +446,7 @@ class _UserInfoPageState extends State<UserInfoPage> {
     });
     return _taken;
   }
-  Future _createUserDoc(String uid) {
+  Future _createUserDoc(String uid) async {
     Map<String,bool> searchTerms = {};
     String fullName = _firstNameController.text+" "+_lastNameController.text;
     for(int i = 0; i < fullName.length; i++) {
@@ -457,7 +458,9 @@ class _UserInfoPageState extends State<UserInfoPage> {
     for(int i = 0; i < _usernameController.text.length; i++) {
       searchTerms[_usernameController.text.substring(0,i+1).toLowerCase()] = true;
     }
-    print(searchTerms);
+    StorageReference storageReference = FirebaseStorage().ref().child('/users/'+uid);
+    StorageUploadTask uploadTask = storageReference.putFile(profilePic);
+    String url = await storageReference.getDownloadURL();
     return Firestore.instance.collection('users').document(uid).setData({
       'uid': uid,
       'fullName': _firstNameController.text+" "+_lastNameController.text,
@@ -468,7 +471,8 @@ class _UserInfoPageState extends State<UserInfoPage> {
       'friends': [],
       'credit': 0,
       'debt': 0,
-    });
+      'profilePicURL': url,
+    }); 
   }
 }
 
