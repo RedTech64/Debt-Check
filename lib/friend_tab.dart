@@ -1,3 +1,4 @@
+import 'package:circular_profile_avatar/circular_profile_avatar.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:debtcheck/bloc/check_bloc.dart';
 import 'package:debtcheck/check_list.dart';
@@ -68,6 +69,7 @@ class FriendCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    print(userData.profilePicURL);
     return InkWell(
       child: new Card(
         child: Container(
@@ -76,7 +78,20 @@ class FriendCard extends StatelessWidget {
             children: <Widget>[
               new Row(
                 children: <Widget>[
-                  new Icon(Icons.person, color: Colors.grey,),
+                  //new Icon(Icons.person, color: Colors.grey,),
+                  //if(userData.profilePicURL == null || userData.profilePicURL == '' )
+                  new CircularProfileAvatar(
+                    userData.profilePicURL,
+                    radius: 20,
+                    initialsText: new Text(
+                      userData.firstName.substring(0,1)+userData.lastName.substring(0,1),
+                      style: new TextStyle(
+                      ),
+                    ),
+                    cacheImage: true,
+                    showInitialTextAbovePicture: false,
+                    elevation: 5,
+                  ),
                   new Container(width: 4,),
                   new Text(
                     userData.fullName,

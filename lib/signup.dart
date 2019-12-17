@@ -421,7 +421,7 @@ class _UserInfoPageState extends State<UserInfoPage> {
             floatingActionButton: new FloatingActionButton(
               child: new Icon(Icons.save),
               onPressed: () async {
-                File file = await imgCropKey.currentState.cropCompleted(image, pictureQuality: 900);
+                File file = await imgCropKey.currentState.cropCompleted(image, pictureQuality: 400);
                 Navigator.of(context).pop(file);
               },
             ),
@@ -458,9 +458,13 @@ class _UserInfoPageState extends State<UserInfoPage> {
     for(int i = 0; i < _usernameController.text.length; i++) {
       searchTerms[_usernameController.text.substring(0,i+1).toLowerCase()] = true;
     }
-    StorageReference storageReference = FirebaseStorage().ref().child('/users/'+uid);
-    StorageUploadTask uploadTask = storageReference.putFile(profilePic);
-    String url = await storageReference.getDownloadURL();
+    String url = '';
+    if(profilePic != null) {
+      StorageReference storageReference = FirebaseStorage().ref().child('/users/'+uid);
+      StorageUploadTask uploadTask = storageReference.putFile(profilePic);
+      StorageTaskSnapshot storageTaskSnapshot = await uploadTask.onComplete;
+      url = await storageTaskSnapshot.ref.getDownloadURL();
+    }
     return Firestore.instance.collection('users').document(uid).setData({
       'uid': uid,
       'fullName': _firstNameController.text+" "+_lastNameController.text,
