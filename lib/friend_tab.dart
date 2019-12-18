@@ -29,7 +29,7 @@ class _FriendsTabState extends State<FriendsTab> {
                   shrinkWrap: true,
                   itemCount: userBlocState.friends.length,
                   itemBuilder: (context, index) {
-                    return new FriendCard(userBlocState.friends[index],checkBlocState.getCreditTo(userBlocState.friends[index].uid)-checkBlocState.getDebtTo(userBlocState.friends[index].uid),checkBlocState.getFromUser(userBlocState.friends[index].uid).length);
+                    return new FriendCard(userBlocState.friends[index],checkBlocState.getDebtTo(userBlocState.friends[index].uid),checkBlocState.getDebtFrom(userBlocState.friends[index].uid),checkBlocState.getFromUser(userBlocState.friends[index].uid).length);
                   },
                 );
               },
@@ -63,14 +63,29 @@ class _FriendsTabState extends State<FriendsTab> {
 
 class FriendCard extends StatelessWidget {
   final UserData userData;
-  final num balance;
+  final num sent;
+  final num received;
   final int checkNum;
-  FriendCard(this.userData,this.balance,this.checkNum);
+  FriendCard(this.userData,this.sent,this.received,this.checkNum);
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      child: new Card(
+    Color balanceColor;
+    if(sent-received >= 0)
+      balanceColor = Colors.green;
+    else
+      balanceColor = Colors.red;
+    return new Card(
+      child: InkWell(
+        onTap: () {
+          Navigator.of(context).push(
+            new MaterialPageRoute(
+              builder: (BuildContext context) {
+                return new FriendPage(userData);
+              },
+            ),
+          );
+        },
         child: Container(
           padding: new EdgeInsets.all(8.0),
           child: Column(
@@ -95,33 +110,55 @@ class FriendCard extends StatelessWidget {
                     fontSize: 20.0,
                   ),
                 ),
-                subtitle: new Text(
-                  '@'+userData.username,
-                  style: new TextStyle(
-                    fontSize: 14.0,
-                  ),
+                subtitle: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    new Text(
+                      '@'+userData.username,
+                      style: new TextStyle(
+                        fontSize: 14.0,
+                      ),
+                    ),
+                    Container(height: 4,),
+                    Row(
+                      children: <Widget>[
+                        new Icon(Icons.arrow_upward, size: 16, color: Colors.grey,),
+                        new Text(
+                          "\$${sent.toStringAsFixed(2)}",
+                          style: new TextStyle(
+                            fontSize: 14.0,
+                          ),
+                        ),
+                        Container(width: 12,),
+                        new Icon(Icons.arrow_downward, size: 16, color: Colors.grey,),
+                        new Text(
+                          "\$${received.toStringAsFixed(2)}",
+                          style: new TextStyle(
+                            fontSize: 14.0,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
-                trailing: new Text(
-                  "\$${balance.toStringAsFixed(2)}",
-                  style: new TextStyle(
-                    fontSize: 20.0,
-                  ),
+                trailing: Column(
+                  children: <Widget>[
+                    new Text(
+                      "\$${(sent-received).toStringAsFixed(2)}",
+                      style: new TextStyle(
+                        fontSize: 20.0,
+                        color: balanceColor,
+                      ),
+                    ),
+                  ],
                 ),
                 contentPadding: EdgeInsets.symmetric(horizontal: 8),
+                isThreeLine: true,
               ),
             ],
           ),
         ),
       ),
-      onTap: () {
-        Navigator.of(context).push(
-          new MaterialPageRoute(
-            builder: (BuildContext context) {
-              return new FriendPage(userData);
-            },
-          ),
-        );
-      },
     );
   }
 }

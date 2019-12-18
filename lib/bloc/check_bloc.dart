@@ -44,7 +44,7 @@ abstract class CheckState extends Equatable {
   List<CheckData> get sent => [];
 
   num getDebtTo(String uid) => 0;
-  num getCreditTo(String uid) => 0;
+  num getDebtFrom(String uid) => 0;
   List<CheckData> getFromUser(String uid) => [];
 
   @override
@@ -65,15 +65,15 @@ class Loaded extends CheckState {
 
   @override
   num getDebtTo(String uid) {
-    List<CheckData> query = checks.where((check) => check.creditorUID == uid).toList();
+    List<CheckData> query = checks.where((check) => check.debitorUID == uid).toList();
     num total = 0;
     query.forEach((check) => total += check.amount);
     return total;
   }
 
   @override
-  num getCreditTo(String uid) {
-    List<CheckData> query = checks.where((check) => check.debitorUID == uid).toList();
+  num getDebtFrom(String uid) {
+    List<CheckData> query = checks.where((check) => check.creditorUID == uid).toList();
     num total = 0;
     query.forEach((check) => total += check.amount);
     return total;

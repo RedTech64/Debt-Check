@@ -1,3 +1,4 @@
+import 'package:circular_profile_avatar/circular_profile_avatar.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:debtcheck/user_search_delegate.dart';
 import 'package:flutter/material.dart';
@@ -62,6 +63,19 @@ class _CheckCreateDialogState extends State<CheckCreateDialog> {
                   chipBuilder: (context, state, userData) {
                     return new InputChip(
                       key: ObjectKey(userData),
+                      avatar: new CircularProfileAvatar(
+                        userData.profilePicURL,
+                        radius: 20,
+                        initialsText: new Text(
+                          userData.firstName.substring(0,1)+userData.lastName.substring(0,1),
+                          style: new TextStyle(
+                          ),
+                        ),
+                        cacheImage: true,
+                        borderWidth: 0.1,
+                        backgroundColor: Colors.grey[200],
+                        borderColor: Colors.black,
+                      ),
                       label: new Text(userData.fullName),
                       onDeleted: () => state.deleteChip(userData),
                     );
@@ -70,6 +84,19 @@ class _CheckCreateDialogState extends State<CheckCreateDialog> {
                     print('build');
                     return ListTile(
                       key: ObjectKey(userData),
+                      leading: new CircularProfileAvatar(
+                        userData.profilePicURL,
+                        radius: 20,
+                        initialsText: new Text(
+                          userData.firstName.substring(0,1)+userData.lastName.substring(0,1),
+                          style: new TextStyle(
+                          ),
+                        ),
+                        cacheImage: true,
+                        borderWidth: 0.1,
+                        backgroundColor: Colors.grey[200],
+                        borderColor: Colors.black,
+                      ),
                       title: new Text(userData.fullName),
                       subtitle: new Text('@'+userData.username),
                       onTap: () => state.selectSuggestion(userData),

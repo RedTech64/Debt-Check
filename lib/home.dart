@@ -35,8 +35,8 @@ class _HomePageState extends State<HomePage> {
               bottom: new TabBar(
                 tabs: <Widget>[
                   Tab(icon: new Icon(Icons.person), text: 'Friends',),
-                  Tab(icon: new Icon(Icons.arrow_downward), text: 'Received',),
                   Tab(icon: new Icon(Icons.arrow_upward), text: 'Sent',),
+                  Tab(icon: new Icon(Icons.arrow_downward), text: 'Received',),
                 ],
               ),
               actions: <Widget>[
@@ -52,12 +52,12 @@ class _HomePageState extends State<HomePage> {
                 new FriendsTab(),
                 BlocBuilder<CheckBloc,CheckState>(
                   builder: (context, state) {
-                    return new CheckList(state.received);
+                    return new CheckList(state.sent);
                   },
                 ),
                 BlocBuilder<CheckBloc,CheckState>(
                   builder: (context, state) {
-                    return new CheckList(state.sent);
+                    return new CheckList(state.received);
                   },
                 ),
               ],
@@ -70,12 +70,6 @@ class _HomePageState extends State<HomePage> {
         );
       },
     );
-  }
-
-  void _updateTheme(Color color,context) {
-    DynamicTheme.of(context).setThemeData(new ThemeData(
-      primarySwatch: color,
-    ));
   }
 
   void _openCreateCheckDialog(UserData userData) async {
