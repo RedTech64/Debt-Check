@@ -476,7 +476,7 @@ class _UserInfoPageState extends State<UserInfoPage> {
       'credit': 0,
       'debt': 0,
       'profilePicURL': url,
-    }); 
+    });
   }
 }
 

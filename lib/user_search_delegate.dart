@@ -1,3 +1,4 @@
+import 'package:circular_profile_avatar/circular_profile_avatar.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:async';
@@ -64,6 +65,15 @@ class UserSearchDelegate extends SearchDelegate<UserData> {
 
   Widget _getUserCard(UserData userData, context) {
       return new ListTile(
+        leading: new CircularProfileAvatar(
+          userData.profilePicURL,
+          radius: 20,
+          elevation: 0,
+          borderColor: Colors.black,
+          borderWidth: 0.1,
+          backgroundColor: Colors.grey[200],
+          initialsText: new Text(userData.firstName.substring(0,1)+userData.lastName.substring(0,1)),
+        ),
         title: new Text(userData.fullName),
         subtitle: new Text('@'+userData.username),
         onTap: () {

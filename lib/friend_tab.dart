@@ -69,56 +69,45 @@ class FriendCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    print(userData.profilePicURL);
     return InkWell(
       child: new Card(
         child: Container(
           padding: new EdgeInsets.all(8.0),
           child: Column(
             children: <Widget>[
-              new Row(
-                children: <Widget>[
-                  //new Icon(Icons.person, color: Colors.grey,),
-                  //if(userData.profilePicURL == null || userData.profilePicURL == '' )
-                  new CircularProfileAvatar(
-                    userData.profilePicURL,
-                    radius: 20,
-                    initialsText: new Text(
-                      userData.firstName.substring(0,1)+userData.lastName.substring(0,1),
-                      style: new TextStyle(
-                      ),
-                    ),
-                    cacheImage: true,
-                    showInitialTextAbovePicture: false,
-                    elevation: 5,
-                  ),
-                  new Container(width: 4,),
-                  new Text(
-                    userData.fullName,
+              new ListTile(
+                leading: new CircularProfileAvatar(
+                  userData.profilePicURL,
+                  radius: 20,
+                  initialsText: new Text(
+                    userData.firstName.substring(0,1)+userData.lastName.substring(0,1),
                     style: new TextStyle(
-                      fontSize: 22.0,
                     ),
                   ),
-                  Spacer(flex: 1,),
-                  new Text(
-                    "\$${balance.toStringAsFixed(2)}",
-                    style: new TextStyle(
-                      fontSize: 22.0,
-                    ),
+                  cacheImage: true,
+                  borderWidth: 0.1,
+                  backgroundColor: Colors.grey[200],
+                  borderColor: Colors.black,
+                ),
+                title: new Text(
+                  userData.fullName,
+                  style: new TextStyle(
+                    fontSize: 20.0,
                   ),
-                ],
-              ),
-              new Row(
-                children: <Widget>[
-                  new Icon(Icons.comment, color: Colors.grey),
-                  new Container(width: 4,),
-                  new Text(
-                    '$checkNum',
-                    style: new TextStyle(
-                      fontSize: 22.0,
-                    ),
+                ),
+                subtitle: new Text(
+                  '@'+userData.username,
+                  style: new TextStyle(
+                    fontSize: 14.0,
                   ),
-                ],
+                ),
+                trailing: new Text(
+                  "\$${balance.toStringAsFixed(2)}",
+                  style: new TextStyle(
+                    fontSize: 20.0,
+                  ),
+                ),
+                contentPadding: EdgeInsets.symmetric(horizontal: 8),
               ),
             ],
           ),

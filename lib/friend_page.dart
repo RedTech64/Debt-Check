@@ -1,3 +1,4 @@
+import 'package:circular_profile_avatar/circular_profile_avatar.dart';
 import 'package:debtcheck/home.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -24,6 +25,23 @@ class _FriendPageState extends State<FriendPage> {
           new Card(
             child: new Column(
               children: <Widget>[
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: new CircularProfileAvatar(
+                    userData.profilePicURL,
+                    radius: 50,
+                    initialsText: new Text(
+                      userData.firstName.substring(0,1)+userData.lastName.substring(0,1),
+                      style: new TextStyle(
+                        fontSize: 36,
+                      ),
+                    ),
+                    cacheImage: true,
+                    borderWidth: 0.1,
+                    backgroundColor: Colors.grey[200],
+                    borderColor: Colors.black,
+                  ),
+                ),
                 Container(
                   padding: EdgeInsets.fromLTRB(8, 8, 8, 2),
                   child: new Text(
