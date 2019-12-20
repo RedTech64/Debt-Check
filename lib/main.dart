@@ -1,5 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:debtcheck/signup.dart';
+import 'signup/phone_login_page.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'home.dart';
@@ -63,7 +63,7 @@ class _MyAppState extends State<MyApp> {
                       case '/signup':
                         return new MaterialPageRoute(
                             builder: (_) {
-                              return new SignupPage();
+                              return new PhoneLoginPage();
                             }
                         );
                       case '/home':
