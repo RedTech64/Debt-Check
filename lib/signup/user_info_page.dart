@@ -28,105 +28,122 @@ class _UserInfoPageState extends State<UserInfoPage> {
   @override
   Widget build(BuildContext context) {
     return new Scaffold(
-      body: new Form(
-        key: _formKey,
-        child: new Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: <Widget>[
-            Spacer(flex: 1,),
-            Container(
-              child: const Text('Please fill out the information below:'),
-              padding: const EdgeInsets.all(8),
-              alignment: Alignment.center,
-            ),
-            Container(
-              padding: const EdgeInsets.all(8),
-              width: 200,
-              alignment: Alignment.center,
-              child: TextFormField(
-                controller: _firstNameController,
-                decoration: new InputDecoration(
-                    labelText: 'First Name',
+      body: SingleChildScrollView(
+        child: new Form(
+          key: _formKey,
+          child: new Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: <Widget>[
+              Container(height: 75,),
+              Container(
+                child: const Text(
+                  'Please fill out the information below:',
+                  style: TextStyle(
+                    fontSize: 22,
+                  ),
+                ),
+                padding: const EdgeInsets.all(8),
+                alignment: Alignment.center,
+              ),
+              Container(
+                padding: const EdgeInsets.all(8),
+                width: 200,
+                alignment: Alignment.center,
+                child: TextFormField(
+                  controller: _firstNameController,
+                  textCapitalization: TextCapitalization.words,
+                  inputFormatters: [
+                    WhitelistingTextInputFormatter(RegExp("[A-Za-z]")),
+                  ],
+                  decoration: new InputDecoration(
+                      labelText: 'First Name',
+                      border: new OutlineInputBorder(
+                        borderRadius: new BorderRadius.circular(8.0),
+                      )
+                  ),
+                  validator: (value) {
+                    if(value.isEmpty)
+                      return 'First name required';
+                    else
+                      return null;
+                  },
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.all(8),
+                width: 200,
+                alignment: Alignment.center,
+                child: TextFormField(
+                  controller: _lastNameController,
+                  textCapitalization: TextCapitalization.words,
+                  inputFormatters: [
+                    WhitelistingTextInputFormatter(RegExp("[A-Za-z]")),
+                  ],
+                  decoration: new InputDecoration(
+                      labelText: 'Last Name',
+                      border: new OutlineInputBorder(
+                        borderRadius: new BorderRadius.circular(8.0),
+                      )
+                  ),
+                  validator: (value) {
+                    if(value.isEmpty)
+                      return 'Last Name required';
+                    else
+                      return null;
+                  },
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.all(8),
+                width: 200,
+                alignment: Alignment.center,
+                child: TextFormField(
+                  controller: _usernameController,
+                  textCapitalization: TextCapitalization.none,
+                  inputFormatters: [
+                    WhitelistingTextInputFormatter(RegExp("[a-z0-9]")),
+                  ],
+                  decoration: new InputDecoration(
+                    prefix: new Text('@'),
+                    labelText: 'Username',
                     border: new OutlineInputBorder(
                       borderRadius: new BorderRadius.circular(8.0),
                     )
+                  ),
+                  validator: (value) => _usernameExists(value) ? "Username taken" : null,
+                  onChanged: (value) {
+                    _formKey.currentState.validate();
+                  },
                 ),
-                validator: (value) {
-                  if(value.isEmpty)
-                    return 'First name required';
-                  else
-                    return null;
-                },
               ),
-            ),
-            Container(
-              padding: const EdgeInsets.all(8),
-              width: 200,
-              alignment: Alignment.center,
-              child: TextFormField(
-                controller: _lastNameController,
-                decoration: new InputDecoration(
-                    labelText: 'Last Name',
-                    border: new OutlineInputBorder(
-                      borderRadius: new BorderRadius.circular(8.0),
-                    )
-                ),
-                validator: (value) {
-                  if(value.isEmpty)
-                    return 'Last Name required';
-                  else
-                    return null;
-                },
-              ),
-            ),
-            Container(
-              padding: const EdgeInsets.all(8),
-              width: 200,
-              alignment: Alignment.center,
-              child: TextFormField(
-                controller: _usernameController,
-                inputFormatters: [
-                  WhitelistingTextInputFormatter(RegExp("[A-Za-z0-9]")),
+              new Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  new Text('Profile Picture: '),
+                  if(profilePic == null)
+                    new Text('None'),
+                  if(profilePic != null)
+                    new CircleAvatar(backgroundImage: FileImage(profilePic),),
+                  new IconButton(
+                    icon: new Icon(Icons.edit),
+                    onPressed: () => _selectImage(),
+                  ),
                 ],
-                decoration: new InputDecoration(
-                  prefix: new Text('@'),
-                  labelText: 'Username',
-                  border: new OutlineInputBorder(
-                    borderRadius: new BorderRadius.circular(8.0),
-                  )
-                ),
-                validator: (value) => _usernameExists(value) ? "Username taken" : null,
-                onChanged: (value) {
-                  _formKey.currentState.validate();
-                },
               ),
-            ),
-            new Row(
-              children: <Widget>[
-                new Text('Profile Picture: '),
-                if(profilePic == null)
-                  new Text('None'),
-                if(profilePic != null)
-                  new CircleAvatar(backgroundImage: FileImage(profilePic),),
-                new IconButton(
-                  icon: new Icon(Icons.edit),
-                  onPressed: () => _selectImage(),
-                ),
-              ],
-            ),
-            RaisedButton(
-              onPressed: () async {
-                if(_formKey.currentState.validate()) {
-                  await _createUserDoc(uid);
-                  Navigator.pushNamed(context, '/home', arguments: uid);
-                }
-              },
-              child: const Text('Done'),
-              color: Colors.redAccent,
-              shape: RoundedRectangleBorder(borderRadius: new BorderRadius.circular(16.0)),
-            ),
-            Spacer(flex: 2,),
-          ],
+              Container(height: 12,),
+              RaisedButton(
+                onPressed: () async {
+                  if(_formKey.currentState.validate()) {
+                    await _createUserDoc(uid);
+                    Navigator.pushNamed(context, '/home', arguments: uid);
+                  }
+                },
+                child: const Text('DONE'),
+                color: Colors.green,
+                shape: RoundedRectangleBorder(borderRadius: new BorderRadius.circular(10.0)),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -141,6 +158,9 @@ class _UserInfoPageState extends State<UserInfoPage> {
         builder: (BuildContext context) {
           final imgCropKey = GlobalKey<ImgCropState>();
           return Scaffold(
+            backgroundColor: Colors.black,
+            resizeToAvoidBottomInset: true,
+            extendBody: true,
             body: new ImgCrop(
               key: imgCropKey,
               chipShape: 'circle',
