@@ -44,7 +44,18 @@ class _HomePageState extends State<HomePage> {
                   icon: new Icon(Icons.person),
                   onPressed: () => _openProfileDialog(context),
                 ),
-                new IconButton(icon: new Icon(Icons.exit_to_app), onPressed: () {_auth.signOut(); BlocProvider.of<UserBloc>(context).add(StartUserBloc(null,null)); Navigator.pushNamed(context, '/signup');}),
+                new IconButton(
+                  icon: new Icon(Icons.exit_to_app),
+                  onPressed: () {
+                    _auth.signOut();
+                    BlocProvider.of<UserBloc>(context).close();
+                    DynamicTheme.of(context).setThemeData(
+                      new ThemeData(
+                        primarySwatch: Colors.green,
+                      ),
+                    );
+                    Navigator.pushNamed(context, '/signup');
+                  }),
               ],
             ),
             body: TabBarView(

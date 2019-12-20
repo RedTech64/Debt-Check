@@ -11,13 +11,15 @@ abstract class UserEvent extends Equatable{
   const UserEvent();
 
   @override
-  List<UserData> get props => [];
+  List get props => [];
 }
 
 class StartUserBloc extends UserEvent {
   final String uid;
   final BuildContext context;
   StartUserBloc(this.uid,this.context);
+
+  List get props => [uid,context];
 }
 
 class Update extends UserEvent {
@@ -30,7 +32,7 @@ class Update extends UserEvent {
   }
 
   @override
-  List<UserData> get props => friends;
+  List get props => [userData,friends];
 }
 
 abstract class UserState extends Equatable {
@@ -53,7 +55,7 @@ class Loading extends UserState {
   Loading(this.userData);
 
   @override
-  List<Object> get props => [userData];
+  List get props => [userData];
 }
 
 class Loaded extends UserState {
@@ -64,7 +66,7 @@ class Loaded extends UserState {
   Loaded(this.userData,this.friends,this.uid);
 
   @override
-  List<Object> get props => [friends,userData,uid];
+  List get props => [friends,userData,uid];
 }
 
 class UserBloc extends Bloc<UserEvent,UserState> {
@@ -78,8 +80,8 @@ class UserBloc extends Bloc<UserEvent,UserState> {
   Stream<UserState> mapEventToState(UserEvent event) async* {
     if(event is StartUserBloc) {
       context = event.context;
+      subscription?.cancel();
       if(event.uid != null && event.uid != "") {
-        subscription?.cancel();
         subscription = Firestore.instance.collection('users').document(event.uid).snapshots().listen((doc) async {
           if(doc.exists) {
             List<Future<DocumentSnapshot>> futures = [];
@@ -96,8 +98,6 @@ class UserBloc extends Bloc<UserEvent,UserState> {
     }
     if(event is Update) {
       if(event.userData != null && event.userData.debt != null && event.userData.credit != null) {
-        print(event.userData.debt);
-        print(DynamicTheme.of(context).data.primaryColor);
         if(event.userData.credit >= event.userData.debt && DynamicTheme.of(context).data.primaryColor != Colors.green)
           DynamicTheme.of(context).setThemeData(
             new ThemeData(primarySwatch: Colors.green),
