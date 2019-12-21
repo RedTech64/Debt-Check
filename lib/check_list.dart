@@ -7,20 +7,38 @@ import 'bloc/check_bloc.dart';
 
 class CheckList extends StatelessWidget {
   final List<CheckData> checks;
-  CheckList(this.checks);
+  final bool sliver;
+  CheckList(this.checks) : sliver = false;
+  CheckList.sliver(this.checks) : sliver = true;
 
   @override
   Widget build(BuildContext context) {
-    return new ListView.builder(
-      shrinkWrap: true,
-      itemCount: checks.length,
-      itemBuilder: (context, index) {
-        if(BlocProvider.of<UserBloc>(context).state.userData.uid == checks[index].creditorUID)
-          return new CheckCard(checks[index],CheckType.sent);
-        else
-          return new CheckCard(checks[index],CheckType.received);
-      },
-    );
+    if(sliver) {
+      return SliverList(
+        delegate: SliverChildBuilderDelegate(
+          (BuildContext context, int index) {
+            return _getCheckCard(context, index);
+          },
+          childCount: checks.length,
+        ),
+      );
+    }
+    else {
+      return new ListView.builder(
+        shrinkWrap: true,
+        itemCount: checks.length,
+        itemBuilder: (context, index) {
+          return _getCheckCard(context, index);
+        },
+      );
+    }
+  }
+
+  Widget _getCheckCard(context,index) {
+    if(BlocProvider.of<UserBloc>(context).state.userData.uid == checks[index].creditorUID)
+      return new CheckCard(checks[index],CheckType.sent);
+    else
+      return new CheckCard(checks[index],CheckType.received);
   }
 }
 
