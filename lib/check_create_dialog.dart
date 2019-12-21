@@ -82,7 +82,6 @@ class _CheckCreateDialogState extends State<CheckCreateDialog> {
                     );
                   },
                   suggestionBuilder: (context, state, userData) {
-                    print('build');
                     return ListTile(
                       key: ObjectKey(userData),
                       leading: new CircularProfileAvatar(

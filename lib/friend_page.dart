@@ -1,10 +1,9 @@
 import 'package:circular_profile_avatar/circular_profile_avatar.dart';
+import 'package:debtcheck/check_page.dart';
 import 'package:debtcheck/home.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-
 import 'bloc/check_bloc.dart';
-import 'check_list.dart';
 
 class FriendPage extends StatefulWidget {
   final UserData userData;
@@ -90,9 +89,18 @@ class _FriendPageState extends State<FriendPage> {
               ],
             ),
           ),
-          BlocBuilder<CheckBloc,CheckState>(
-            builder: (context, state) {
-              return new CheckList(state.getFromUser(userData.uid));
+          new RaisedButton(
+            child: const Text('View Outstanding Checks'),
+            shape: RoundedRectangleBorder(borderRadius: new BorderRadius.circular(10.0)),
+            color: Theme.of(context).primaryColor,
+            onPressed: () {
+              Navigator.of(context).push(
+                new MaterialPageRoute(
+                  builder: (BuildContext context) {
+                    return new CheckPage('Outstanding Checks', BlocProvider.of<CheckBloc>(context).state.getFromUser(userData.uid));
+                  },
+                )
+              );
             },
           ),
         ],
