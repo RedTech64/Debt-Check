@@ -8,6 +8,7 @@ import 'package:flutter_masked_text/flutter_masked_text.dart';
 import 'package:intl/intl.dart';
 import 'bloc/user_bloc.dart';
 import 'home.dart';
+import 'package:datetime_picker_formfield/datetime_picker_formfield.dart';
 
 class CheckCreateDialog extends StatefulWidget {
   @override
@@ -157,7 +158,9 @@ class _CheckCreateDialogState extends State<CheckCreateDialog> {
                 ),
               ),
               new RaisedButton(
-                child: new Text('DONE'),
+                child: const Text('DONE'),
+                shape: RoundedRectangleBorder(borderRadius: new BorderRadius.circular(10.0)),
+                color: Theme.of(context).primaryColor,
                 onPressed: () {
                   _formkey.currentState.save();
                   if (_formkey.currentState.validate()) {
