@@ -20,41 +20,37 @@ class _FriendsTabState extends State<FriendsTab> {
   Widget build(BuildContext context) {
     return BlocBuilder<UserBloc,UserState>(
       builder: (context, userBlocState) {
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: <Widget>[
-            new BlocBuilder<CheckBloc,CheckState>(
-              builder: (context, checkBlocState) {
-                return ListView.builder(
-                  shrinkWrap: true,
-                  itemCount: userBlocState.friends.length,
-                  itemBuilder: (context, index) {
-                    return new FriendCard(userBlocState.friends[index],checkBlocState.getDebtTo(userBlocState.friends[index].uid),checkBlocState.getDebtFrom(userBlocState.friends[index].uid),checkBlocState.getFromUser(userBlocState.friends[index].uid).length);
-                  },
-                );
-              },
-            ),
-            new FlatButton(
-              child: new Row(
-                mainAxisSize: MainAxisSize.min,
-                mainAxisAlignment: MainAxisAlignment.center,
+        return BlocBuilder<CheckBloc,CheckState>(
+          builder: (context, checkBlocState) {
+            return new SingleChildScrollView(
+              child: new Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: <Widget>[
-                  new Icon(Icons.add),
-                  new Text(' ADD FRIEND'),
+                  ...userBlocState.friends.map((friend) => new FriendCard(friend,checkBlocState.getDebtTo(friend.uid),checkBlocState.getDebtFrom(friend.uid),checkBlocState.getFromUser(friend.uid).length)),
+                  new FlatButton(
+                    child: new Row(
+                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: <Widget>[
+                        new Icon(Icons.add),
+                        new Text(' ADD FRIEND'),
+                      ],
+                    ),
+                    onPressed: () async {
+                      UserData newFriend = await showSearch<UserData>(
+                        context: context,
+                        delegate: new UserSearchDelegate(exclude: [BlocProvider.of<UserBloc>(context).state.userData.uid, ...userBlocState.friends.map((user) => user.uid)],),
+                      );
+                      if(newFriend != null && userBlocState.friends.where((friend) => friend.uid == newFriend.uid).length == 0)
+                        Firestore.instance.collection('users').document(BlocProvider.of<UserBloc>(context).state.userData.uid).updateData({
+                          'friends': FieldValue.arrayUnion([newFriend.uid]),
+                        });
+                    },
+                  ),
                 ],
               ),
-              onPressed: () async {
-                UserData newFriend = await showSearch<UserData>(
-                  context: context,
-                  delegate: new UserSearchDelegate(exclude: [BlocProvider.of<UserBloc>(context).state.userData.uid, ...userBlocState.friends.map((user) => user.uid)],),
-                );
-                if(newFriend != null && userBlocState.friends.where((friend) => friend.uid == newFriend.uid).length == 0)
-                  Firestore.instance.collection('users').document(BlocProvider.of<UserBloc>(context).state.userData.uid).updateData({
-                    'friends': FieldValue.arrayUnion([newFriend.uid]),
-                  });
-              },
-            ),
-          ],
+            );
+          }
         );
       },
     );
