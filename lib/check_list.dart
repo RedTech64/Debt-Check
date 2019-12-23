@@ -52,6 +52,10 @@ class CheckCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if(checkType == CheckType.received)
+      checkData.debitorName = 'You';
+    else
+      checkData.creditorName = 'You';
     Color amountColor;
     if(checkType == CheckType.received)
       amountColor = Colors.red;
@@ -61,60 +65,91 @@ class CheckCard extends StatelessWidget {
       shape: new RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(15)
       ),
-      child: new Column(
+      child: Column(
         children: <Widget>[
-          new Container(
-            padding: EdgeInsets.all(12),
-            child: new Row(
-              children: <Widget>[
-                new Icon(Icons.person, color: Colors.grey,),
-                new Container(width: 4,),
-                if(checkType == CheckType.sent)
-                  new Text(
-                    '${checkData.debitorName}',
-                    style: new TextStyle(
-                      fontSize: 18,
+          new Row(
+            children: <Widget>[
+              new Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  new Container(
+                    padding: EdgeInsets.all(12),
+                    child: new Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: <Widget>[
+                        new Icon(Icons.person, color: Colors.green,),
+                        new Container(width: 4,),
+                        new Text(
+                          '${checkData.creditorName}',
+                          style: new TextStyle(
+                            fontSize: 18,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                if(checkType == CheckType.received)
-                  new Text(
-                    '${checkData.creditorName}',
-                    style: new TextStyle(
-                      fontSize: 18,
+                  new Container(
+                    padding: EdgeInsets.fromLTRB(12, 4, 12, 12),
+                    child: new Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: <Widget>[
+                        new Icon(Icons.person, color: Colors.red,),
+                        new Container(width: 4,),
+                        new Text(
+                          '${checkData.debitorName}',
+                          style: new TextStyle(
+                            fontSize: 18,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                new Spacer(flex: 1,),
-                new Text(
-                  '\$${checkData.amount.toStringAsFixed(2)}',
-                  style: new TextStyle(
-                    fontSize: 18,
-                    color: amountColor
+                  if(checkData.description != '')
+                    new Container(
+                      padding: EdgeInsets.fromLTRB(12, 4, 12, 12),
+                      child: new Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: <Widget>[
+                          new Icon(Icons.mode_comment, color: Colors.grey),
+                          new Container(width: 4,),
+                          if(checkData.description != '')
+                          new Text(
+                            '${checkData.description}',
+                            style: new TextStyle(
+                              fontSize: 18,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                ],
+              ),
+              Spacer(flex: 1,),
+              new Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: <Widget>[
+                  new Container(
+                    padding: EdgeInsets.all(8),
+                    child: new Text(
+                      '\$${checkData.amount.toStringAsFixed(2)}',
+                      style: new TextStyle(
+                          fontSize: 18,
+                          color: amountColor
+                      ),
+                    ),
                   ),
-                ),
-              ],
-            ),
-          ),
-          new Container(
-            padding: EdgeInsets.all(12),
-            child: new Row(
-              children: <Widget>[
-                new Icon(Icons.mode_comment, color: Colors.grey),
-                new Container(width: 4,),
-                new Text(
-                  '${checkData.description}',
-                  style: new TextStyle(
-                    fontSize: 18,
+                  new Container(
+                    padding: EdgeInsets.all(9),
+                    child: new Text(
+                      '${checkData.date.month}/${checkData.date.day}/${checkData.date.year}',
+                      style: new TextStyle(
+                        fontSize: 18,
+                      ),
+                    ),
                   ),
-                ),
-                new Spacer(flex: 1,),
-                new Text(
-                  '${checkData.date.month}/${checkData.date.day}/${checkData.date.year}',
-                  style: new TextStyle(
-                    fontSize: 18,
-                  ),
-                ),
-              ],
-            ),
+                ],
+              ),
+            ],
           ),
           new Divider(height: 0,),
           if(checkType == CheckType.sent)
