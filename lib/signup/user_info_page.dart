@@ -134,6 +134,15 @@ class _UserInfoPageState extends State<UserInfoPage> {
               RaisedButton(
                 onPressed: () async {
                   if(_formKey.currentState.validate()) {
+                    Navigator.of(context).push(new MaterialPageRoute(
+                        builder: (BuildContext context) {
+                          return new Scaffold(
+                            body: new Center(
+                              child: new CircularProgressIndicator(),
+                            ),
+                          );
+                        }
+                    ));
                     await _createUserDoc(uid);
                     Navigator.pushNamed(context, '/home', arguments: uid);
                   }

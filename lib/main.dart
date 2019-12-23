@@ -10,7 +10,6 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:dynamic_theme/dynamic_theme.dart';
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
   runApp(MyApp());
 }
 
@@ -79,7 +78,11 @@ class _MyAppState extends State<MyApp> {
                         return new MaterialPageRoute(
                             builder: (context) {
                               _checkSignin(context);
-                              return new CircularProgressIndicator();
+                              return new Scaffold(
+                                body: new Center(
+                                  child: new CircularProgressIndicator(),
+                                ),
+                              );
                             }
                         );
                     }
