@@ -2,6 +2,7 @@ import 'package:circular_profile_avatar/circular_profile_avatar.dart';
 import 'package:flutter/material.dart';
 
 import 'home.dart';
+import 'signup/user_info_page.dart';
 
 class ProfileDialog extends StatefulWidget {
   final UserData userData;
@@ -41,6 +42,18 @@ class _ProfileDialogState extends State<ProfileDialog> {
           ),
           new Text(
             '@${userData.username}',
+          ),
+          FlatButton(
+            child: new Text('EDIT PROFILE'),
+            onPressed: () {
+               Navigator.of(context).push(
+                 new MaterialPageRoute(
+                   builder: (BuildContext context) {
+                     return new UserInfoPage(userData);
+                   }
+                 ),
+               );
+            },
           ),
         ],
       ),

@@ -5,6 +5,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../home.dart';
+
 final FirebaseAuth _auth = FirebaseAuth.instance;
 
 class PhoneLoginPage extends StatefulWidget {
@@ -111,7 +113,7 @@ class _PhoneLoginPageState extends State<PhoneLoginPage> {
         Navigator.of(context).pushReplacement(
           new MaterialPageRoute(
               builder: (BuildContext context) {
-                return new UserInfoPage(user.uid);
+                return new UserInfoPage(new UserData(uid: user.uid,));
               }
           ),
         );

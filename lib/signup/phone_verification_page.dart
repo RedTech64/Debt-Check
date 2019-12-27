@@ -3,6 +3,8 @@ import 'package:debtcheck/signup/user_info_page.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
+import '../home.dart';
+
 final FirebaseAuth _auth = FirebaseAuth.instance;
 
 class VerificationCodePage extends StatefulWidget {
@@ -93,7 +95,7 @@ class _VerificationCodePageState extends State<VerificationCodePage> {
                       Navigator.of(context).pushReplacement(
                         new MaterialPageRoute(
                             builder: (BuildContext context) {
-                              return new UserInfoPage(result);
+                              return new UserInfoPage(new UserData(uid: result));
                             }
                         ),
                       );

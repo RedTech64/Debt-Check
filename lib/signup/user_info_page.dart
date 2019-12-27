@@ -7,23 +7,36 @@ import 'package:flutter/services.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:simple_image_crop/simple_image_crop.dart';
+import 'package:http/http.dart' as http;
+
+import '../home.dart';
 
 class UserInfoPage extends StatefulWidget {
-  final String uid;
-  UserInfoPage(this.uid);
+  final UserData userData;
+  UserInfoPage(this.userData);
   @override
-  _UserInfoPageState createState() => _UserInfoPageState(this.uid);
+  _UserInfoPageState createState() => _UserInfoPageState(this.userData);
 }
 
 class _UserInfoPageState extends State<UserInfoPage> {
-  String uid;
-  TextEditingController _firstNameController = new TextEditingController();
-  TextEditingController _lastNameController = new TextEditingController();
-  TextEditingController _usernameController = new TextEditingController();
+  UserData userData;
+  TextEditingController _firstNameController;
+  TextEditingController _lastNameController;
+  TextEditingController _usernameController;
   final _formKey = GlobalKey<FormState>();
   bool _taken = false;
   File profilePic;
-  _UserInfoPageState(this.uid);
+  _UserInfoPageState(this.userData);
+
+  @override
+  void initState() {
+    super.initState();
+    if(userData.username != null && userData.username != '') {
+      _firstNameController = new TextEditingController(text: userData.firstName);
+      _lastNameController = new TextEditingController(text: userData.lastName);
+      _usernameController = new TextEditingController(text: userData.username);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -110,7 +123,14 @@ class _UserInfoPageState extends State<UserInfoPage> {
                       borderRadius: new BorderRadius.circular(8.0),
                     )
                   ),
-                  validator: (value) => _usernameExists(value) ? "Username taken" : null,
+                  validator: (value) {
+                    if(value.length < 5)
+                      return '4 character minimum';
+                    else if(_usernameExists(value))
+                      return 'Username taken';
+                    else
+                      return null;
+                  },
                   onChanged: (value) {
                     _formKey.currentState.validate();
                   },
@@ -120,10 +140,7 @@ class _UserInfoPageState extends State<UserInfoPage> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
                   new Text('Profile Picture: '),
-                  if(profilePic == null)
-                    new Text('None'),
-                  if(profilePic != null)
-                    new CircleAvatar(backgroundImage: FileImage(profilePic),),
+                  _getProfilePicDisplay(),
                   new IconButton(
                     icon: new Icon(Icons.edit),
                     onPressed: () => _selectImage(),
@@ -143,8 +160,8 @@ class _UserInfoPageState extends State<UserInfoPage> {
                           );
                         }
                     ));
-                    await _createUserDoc(uid);
-                    Navigator.pushNamed(context, '/home', arguments: uid);
+                    await _createUserDoc();
+                    Navigator.pushNamed(context, '/home', arguments: userData.uid);
                   }
                 },
                 child: const Text('DONE'),
@@ -158,10 +175,21 @@ class _UserInfoPageState extends State<UserInfoPage> {
     );
   }
 
+  Widget _getProfilePicDisplay() {
+    if(profilePic != null)
+      return new CircleAvatar(backgroundImage: FileImage(profilePic),);
+    else if(userData.profilePicURL != null && userData.profilePicURL != '')
+      return new CircleAvatar(backgroundImage: NetworkImage(userData.profilePicURL),);
+    else
+      return new Text('None');
+  }
+
   void _selectImage() async {
     File image = await ImagePicker.pickImage(
       source: ImageSource.gallery,
     );
+    if(image == null)
+      return;
     File cropped = await Navigator.of(context).push(
       new MaterialPageRoute(
         builder: (BuildContext context) {
@@ -202,9 +230,11 @@ class _UserInfoPageState extends State<UserInfoPage> {
         _taken = false;
       }
     });
+    if(value == userData.username)
+      _taken = false;
     return _taken;
   }
-  Future _createUserDoc(String uid) async {
+  Future _createUserDoc() async {
     Map<String,bool> searchTerms = {};
     String fullName = _firstNameController.text+" "+_lastNameController.text;
     for(int i = 0; i < fullName.length; i++) {
@@ -218,22 +248,38 @@ class _UserInfoPageState extends State<UserInfoPage> {
     }
     String url = '';
     if(profilePic != null) {
-      StorageReference storageReference = FirebaseStorage().ref().child('/users/'+uid);
+      StorageReference storageReference = FirebaseStorage().ref().child('/users/'+userData.uid);
       StorageUploadTask uploadTask = storageReference.putFile(profilePic);
       StorageTaskSnapshot storageTaskSnapshot = await uploadTask.onComplete;
       url = await storageTaskSnapshot.ref.getDownloadURL();
     }
-    return Firestore.instance.collection('users').document(uid).setData({
-      'uid': uid,
-      'fullName': _firstNameController.text+" "+_lastNameController.text,
-      'firstName': _firstNameController.text,
-      'lastName': _lastNameController.text,
-      'username': _usernameController.text,
-      'searchTerms': searchTerms,
-      'friends': [],
-      'credit': 0,
-      'debt': 0,
-      'profilePicURL': url,
-    });
+    if(userData.username != null) {
+      if(url != '') {
+        await Firestore.instance.collection('users').document(userData.uid).updateData({
+          'profilePicURL': url,
+        });
+      }
+      return Firestore.instance.collection('users').document(userData.uid).updateData({
+        'fullName': _firstNameController.text+" "+_lastNameController.text,
+        'firstName': _firstNameController.text,
+        'lastName': _lastNameController.text,
+        'username': _usernameController.text,
+        'searchTerms': searchTerms,
+      });
+
+    } else {
+      return Firestore.instance.collection('users').document(userData.uid).setData({
+        'uid': userData.uid,
+        'fullName': _firstNameController.text+" "+_lastNameController.text,
+        'firstName': _firstNameController.text,
+        'lastName': _lastNameController.text,
+        'username': _usernameController.text,
+        'searchTerms': searchTerms,
+        'friends': [],
+        'credit': 0,
+        'debt': 0,
+        'profilePicURL': url,
+      });
+    }
   }
 }
