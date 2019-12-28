@@ -1,8 +1,13 @@
 import 'package:circular_profile_avatar/circular_profile_avatar.dart';
+import 'package:dynamic_theme/dynamic_theme.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'bloc/user_bloc.dart';
 import 'home.dart';
 import 'signup/user_info_page.dart';
+
+FirebaseAuth _auth = FirebaseAuth.instance;
 
 class ProfileDialog extends StatefulWidget {
   final UserData userData;
@@ -53,6 +58,19 @@ class _ProfileDialogState extends State<ProfileDialog> {
                    }
                  ),
                );
+            },
+          ),
+          FlatButton(
+            child: new Text('SIGN OUT'),
+            onPressed: () {
+              _auth.signOut();
+              BlocProvider.of<UserBloc>(context).add(StartUserBloc(null, null));
+              DynamicTheme.of(context).setThemeData(
+                new ThemeData(
+                  primarySwatch: Colors.green,
+                ),
+              );
+              Navigator.pushNamed(context, '/signup');
             },
           ),
         ],

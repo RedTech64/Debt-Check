@@ -70,9 +70,15 @@ class _PhoneLoginPageState extends State<PhoneLoginPage> {
                   onPressed: () async {
                     Navigator.of(context).push(new MaterialPageRoute(
                         builder: (BuildContext context) {
-                          return new Scaffold(
-                            body: new Center(
-                              child: new CircularProgressIndicator(),
+                          return Theme(
+                            data: new ThemeData(
+                              brightness: Brightness.light,
+                              primarySwatch: Colors.green
+                            ),
+                            child: new Scaffold(
+                              body: new Center(
+                                child: new CircularProgressIndicator(),
+                              ),
                             ),
                           );
                         }
@@ -108,12 +114,20 @@ class _PhoneLoginPageState extends State<PhoneLoginPage> {
       FirebaseUser user = await _auth.currentUser();
       DocumentSnapshot userDoc = await Firestore.instance.collection('users').document(user.uid).get();
       if(userDoc.exists) {
-        Navigator.pushNamed(context, '/home');
+        Navigator.pushNamed(context, '/home', arguments: user.uid);
       } else {
         Navigator.of(context).pushReplacement(
           new MaterialPageRoute(
               builder: (BuildContext context) {
-                return new UserInfoPage(new UserData(uid: user.uid,));
+                return Theme(
+                  data: new ThemeData(
+                    brightness: Brightness.light,
+                    primarySwatch: Colors.green
+                  ),
+                  child: new UserInfoPage(
+                    new UserData(uid: user.uid,)
+                  )
+                );
               }
           ),
         );
@@ -133,7 +147,13 @@ class _PhoneLoginPageState extends State<PhoneLoginPage> {
         (String verificationId, [int forceResendingToken]) async {
       Navigator.of(context).pushReplacement(new MaterialPageRoute(
           builder: (BuildContext context) {
-            return new VerificationCodePage(verificationId);
+            return new Theme(
+                data: new ThemeData(
+                    brightness: Brightness.light,
+                    primarySwatch: Colors.green
+                ),
+                child: VerificationCodePage(verificationId),
+            );
           }
       ));
     };

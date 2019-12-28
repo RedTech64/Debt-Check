@@ -47,10 +47,14 @@ class _MyAppState extends State<MyApp> {
           return BlocProvider<CheckBloc>(
             create: (BuildContext context) => CheckBloc(userBloc: BlocProvider.of<UserBloc>(context)),
             child: DynamicTheme(
-              defaultBrightness: Brightness.light,
+              defaultBrightness: MediaQuery.platformBrightnessOf(context),
               data: (brightness) => new ThemeData(
                 primarySwatch: Colors.green,
                 brightness: brightness,
+                buttonTheme: new ButtonThemeData(
+                  shape: RoundedRectangleBorder(borderRadius: new BorderRadius.circular(10.0)),
+                  buttonColor: Colors.green,
+                ),
               ),
               themedWidgetBuilder: (context, theme) {
                 return MaterialApp(
@@ -62,13 +66,20 @@ class _MyAppState extends State<MyApp> {
                       case '/signup':
                         return new MaterialPageRoute(
                             builder: (_) {
-                              return new PhoneLoginPage();
+                              return new Theme(
+                                data: new ThemeData(
+                                  brightness: Brightness.light,
+                                  primarySwatch: Colors.green
+                                ),
+                                child: PhoneLoginPage()
+                              );
                             }
                         );
                       case '/home':
                         _updateFCM(settings.arguments);
                         return new MaterialPageRoute(
                             builder: (context) {
+                              print(settings.arguments);
                               BlocProvider.of<UserBloc>(context).add(StartUserBloc(settings.arguments,context));
                               BlocProvider.of<CheckBloc>(context).add(StartCheckBloc());
                               return new HomePage();

@@ -78,6 +78,7 @@ class UserBloc extends Bloc<UserEvent,UserState> {
 
   @override
   Stream<UserState> mapEventToState(UserEvent event) async* {
+    print(event.toString());
     if(event is StartUserBloc) {
       context = event.context;
       subscription?.cancel();
@@ -93,22 +94,61 @@ class UserBloc extends Bloc<UserEvent,UserState> {
             add(Update(doc,docs));
           }
         });
-        yield InitialState(new UserData(uid: event.uid));
       }
     }
     if(event is Update) {
       if(event.userData != null && event.userData.debt != null && event.userData.credit != null) {
-        if(event.userData.credit >= event.userData.debt && DynamicTheme.of(context).data.primaryColor != Colors.green)
-          DynamicTheme.of(context).setThemeData(
-            new ThemeData(primarySwatch: Colors.green),
-          );
-        else if(event.userData.credit < event.userData.debt && DynamicTheme.of(context).data.primaryColor != Colors.red)
-          DynamicTheme.of(context).setThemeData(
-            new ThemeData(primarySwatch: Colors.red),
-          );
+        Brightness brightness = DynamicTheme.of(context).brightness;
+        bool readyForGreen = (brightness == Brightness.light && DynamicTheme.of(context).data.primaryColor != Colors.green) || (brightness == Brightness.dark && DynamicTheme.of(context).data.accentColor != Colors.green);
+        bool readyForRed = (brightness == Brightness.light && DynamicTheme.of(context).data.primaryColor != Colors.red) || (brightness == Brightness.dark && DynamicTheme.of(context).data.accentColor != Colors.red);
+        if(event.userData.credit >= event.userData.debt && readyForGreen)
+          if(brightness == Brightness.light)
+            DynamicTheme.of(context).setThemeData(
+              _getLightTheme(Colors.green),
+            );
+          else
+            DynamicTheme.of(context).setThemeData(
+              _getDarkTheme(Colors.green),
+            );
+        else if(event.userData.credit < event.userData.debt && readyForRed)
+          if(brightness == Brightness.light)
+            DynamicTheme.of(context).setThemeData(
+              _getLightTheme(Colors.red),
+            );
+          else
+            DynamicTheme.of(context).setThemeData(
+              _getDarkTheme(Colors.red),
+            );
       }
       yield Loaded(event.userData,event.friends,state.userData.uid);
     }
+  }
+
+  ThemeData _getLightTheme(Color primaryColor) {
+    return new ThemeData(
+      brightness: Brightness.light,
+      indicatorColor: Colors.white,
+      primarySwatch: primaryColor,
+      buttonTheme: new ButtonThemeData(
+        shape: RoundedRectangleBorder(borderRadius: new BorderRadius.circular(10.0)),
+        buttonColor: primaryColor,
+      ),
+    );
+  }
+
+  ThemeData _getDarkTheme(Color primaryColor) {
+    return new ThemeData(
+      brightness: Brightness.dark,
+      accentColor: primaryColor,
+      buttonTheme: new ButtonThemeData(
+        shape: RoundedRectangleBorder(borderRadius: new BorderRadius.circular(10.0)),
+        buttonColor: primaryColor,
+      ),
+      tabBarTheme: new TabBarTheme(
+        unselectedLabelColor: Colors.white,
+        labelColor: primaryColor,
+      ),
+    );
   }
 
   @override

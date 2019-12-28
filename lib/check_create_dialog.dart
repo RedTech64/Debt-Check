@@ -70,6 +70,7 @@ class _CheckCreateDialogState extends State<CheckCreateDialog> {
                         initialsText: new Text(
                           userData.firstName.substring(0,1)+userData.lastName.substring(0,1),
                           style: new TextStyle(
+                              color: Colors.black
                           ),
                         ),
                         cacheImage: true,
@@ -90,6 +91,7 @@ class _CheckCreateDialogState extends State<CheckCreateDialog> {
                         initialsText: new Text(
                           userData.firstName.substring(0,1)+userData.lastName.substring(0,1),
                           style: new TextStyle(
+                              color: Colors.black
                           ),
                         ),
                         cacheImage: true,
@@ -158,8 +160,6 @@ class _CheckCreateDialogState extends State<CheckCreateDialog> {
               ),
               new RaisedButton(
                 child: const Text('DONE'),
-                shape: RoundedRectangleBorder(borderRadius: new BorderRadius.circular(10.0)),
-                color: Theme.of(context).primaryColor,
                 onPressed: () {
                   _formkey.currentState.save();
                   if (_formkey.currentState.validate()) {

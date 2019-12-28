@@ -1,4 +1,5 @@
 import 'package:circular_profile_avatar/circular_profile_avatar.dart';
+import 'package:dynamic_theme/dynamic_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:async';
@@ -9,6 +10,25 @@ class UserSearchDelegate extends SearchDelegate<UserData> {
   List<String> exclude = [];
 
   UserSearchDelegate({this.defaultList, this.exclude});
+
+  @override
+  ThemeData appBarTheme(BuildContext context) {
+    ThemeData theme = DynamicTheme.of(context).data;
+    if(DynamicTheme.of(context).brightness == Brightness.light) {
+      return new ThemeData(
+        primaryColor: theme.primaryColor,
+      );
+    } else {
+      return new ThemeData(
+        primaryColor: new Color.fromRGBO(33, 33, 3, 0),
+        accentColor: theme.accentColor,
+        textTheme: new TextTheme(
+          title: new TextStyle(color: Colors.white),
+        ),
+      );
+    }
+
+  }
 
   @override
   List<Widget> buildActions(BuildContext context) {
@@ -37,7 +57,7 @@ class UserSearchDelegate extends SearchDelegate<UserData> {
       future: searchUsers(),
       builder: (context, future) {
         if(future.connectionState == ConnectionState.waiting)
-          return new CircularProgressIndicator();
+          return Center(child: new CircularProgressIndicator());
         future.data.removeWhere((user) => exclude.contains(user.uid));
         return new ListView.builder(
           itemCount: future.data.length,
@@ -72,7 +92,12 @@ class UserSearchDelegate extends SearchDelegate<UserData> {
           borderColor: Colors.black,
           borderWidth: 0.1,
           backgroundColor: Colors.grey[200],
-          initialsText: new Text(userData.firstName.substring(0,1)+userData.lastName.substring(0,1)),
+          initialsText: new Text(
+            userData.firstName.substring(0,1)+userData.lastName.substring(0,1),
+            style: new TextStyle(
+                color: Colors.black
+            ),
+          ),
         ),
         title: new Text(userData.fullName),
         subtitle: new Text('@'+userData.username),

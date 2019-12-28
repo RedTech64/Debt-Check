@@ -153,9 +153,12 @@ class _UserInfoPageState extends State<UserInfoPage> {
                   if(_formKey.currentState.validate()) {
                     Navigator.of(context).push(new MaterialPageRoute(
                         builder: (BuildContext context) {
-                          return new Scaffold(
-                            body: new Center(
-                              child: new CircularProgressIndicator(),
+                          return new Theme(
+                            data: Theme.of(context),
+                            child: new Scaffold(
+                              body: new Center(
+                                child: new CircularProgressIndicator(),
+                              ),
                             ),
                           );
                         }
@@ -165,7 +168,7 @@ class _UserInfoPageState extends State<UserInfoPage> {
                   }
                 },
                 child: const Text('DONE'),
-                color: Colors.green,
+                color: Theme.of(context).accentColor,
                 shape: RoundedRectangleBorder(borderRadius: new BorderRadius.circular(10.0)),
               ),
             ],

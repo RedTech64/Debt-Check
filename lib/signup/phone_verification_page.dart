@@ -79,9 +79,15 @@ class _VerificationCodePageState extends State<VerificationCodePage> {
                 if(_formKey.currentState.validate()) {
                   Navigator.of(context).push(new MaterialPageRoute(
                       builder: (BuildContext context) {
-                        return new Scaffold(
-                          body: new Center(
-                            child: new CircularProgressIndicator(),
+                        return Theme(
+                          data: new ThemeData(
+                            brightness: Brightness.light,
+                            primarySwatch: Colors.green
+                          ),
+                          child: new Scaffold(
+                            body: new Center(
+                              child: new CircularProgressIndicator(),
+                            ),
                           ),
                         );
                       }
@@ -95,7 +101,13 @@ class _VerificationCodePageState extends State<VerificationCodePage> {
                       Navigator.of(context).pushReplacement(
                         new MaterialPageRoute(
                             builder: (BuildContext context) {
-                              return new UserInfoPage(new UserData(uid: result));
+                              return new Theme(
+                                  data: new ThemeData(
+                                      brightness: Brightness.light,
+                                      primarySwatch: Colors.green
+                                  ),
+                                  child: new UserInfoPage(new UserData(uid: result))
+                              );
                             }
                         ),
                       );

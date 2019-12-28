@@ -8,11 +8,8 @@ import 'package:debtcheck/friend_tab.dart';
 import 'package:debtcheck/profile_dialog.dart';
 import 'package:dynamic_theme/dynamic_theme.dart';
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'bloc/check_bloc.dart';
-
-FirebaseAuth _auth = FirebaseAuth.instance;
 
 class HomePage extends StatefulWidget {
 
@@ -25,13 +22,18 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    Icon brightnessIcon;
+    if(DynamicTheme.of(context).brightness == Brightness.light)
+      brightnessIcon = new Icon(Icons.brightness_high);
+    else
+      brightnessIcon = new Icon(Icons.brightness_low);
     return new BlocBuilder<UserBloc,UserState>(
       builder: (context, state) {
         return new DefaultTabController(
           length: 3,
           child: Scaffold(
             appBar: AppBar(
-              title: Text("Debt Check"),
+              title: Text('Debt Check'),
               bottom: new TabBar(
                 tabs: <Widget>[
                   Tab(icon: new Icon(Icons.person), text: 'Friends',),
@@ -41,21 +43,19 @@ class _HomePageState extends State<HomePage> {
               ),
               actions: <Widget>[
                 new IconButton(
+                  icon: brightnessIcon,
+                  onPressed: () {
+                    if(DynamicTheme.of(context).brightness == Brightness.light) {
+                      DynamicTheme.of(context).setBrightness(Brightness.dark);
+                    } else {
+                      DynamicTheme.of(context).setBrightness(Brightness.light);
+                    }
+                  },
+                ),
+                new IconButton(
                   icon: new Icon(Icons.person),
                   onPressed: () => _openProfileDialog(context),
                 ),
-                new IconButton(
-                  icon: new Icon(Icons.exit_to_app),
-                  onPressed: () {
-                    _auth.signOut();
-                    BlocProvider.of<UserBloc>(context).close();
-                    DynamicTheme.of(context).setThemeData(
-                      new ThemeData(
-                        primarySwatch: Colors.green,
-                      ),
-                    );
-                    Navigator.pushNamed(context, '/signup');
-                  }),
               ],
             ),
             body: TabBarView(
