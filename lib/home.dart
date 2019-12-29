@@ -104,6 +104,7 @@ class _HomePageState extends State<HomePage> {
           'debitorUID': checkData.debitorUID,
           'involved': [userData.uid, checkData.debitorUID],
           'paid': false,
+          'lastNudge': Timestamp.fromDate(DateTime.now()),
         });
       }
     }
@@ -130,11 +131,17 @@ class CheckData {
   String debitorName;
   DateTime date;
   bool paid;
+  DateTime lastNudge;
 
-  CheckData({this.id,this.description,this.amount,this.creditorUID,this.debitorUID,this.creditorName,this.debitorName,this.date,this.paid});
+  CheckData({this.id,this.description,this.amount,this.creditorUID,this.debitorUID,this.creditorName,this.debitorName,this.date,this.paid,this.lastNudge});
 
   factory CheckData.fromDoc(DocumentSnapshot doc) {
-    return new CheckData(id: doc.documentID,description: doc.data['description'], amount: doc.data['amount'], creditorUID: doc.data['creditorUID'], debitorUID: doc.data['debitorUID'], creditorName: doc.data['creditorName'], debitorName: doc.data['debitorName'], date: doc.data['date'].toDate(), paid: doc.data['paid']);
+    DateTime lastNudge;
+    if(doc.data['lastNudge'] == null)
+      lastNudge = null;
+    else
+      lastNudge = doc.data['lastNudge'].toDate();
+    return new CheckData(id: doc.documentID,description: doc.data['description'], amount: doc.data['amount'], creditorUID: doc.data['creditorUID'], debitorUID: doc.data['debitorUID'], creditorName: doc.data['creditorName'], debitorName: doc.data['debitorName'], date: doc.data['date'].toDate(), paid: doc.data['paid'], lastNudge: lastNudge);
   }
 }
 

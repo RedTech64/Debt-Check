@@ -52,10 +52,6 @@ class CheckCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if(checkType == CheckType.received)
-      checkData.debitorName = 'You';
-    else
-      checkData.creditorName = 'You';
     Color amountColor;
     if(checkType == CheckType.received)
       amountColor = Colors.red;
@@ -79,12 +75,20 @@ class CheckCard extends StatelessWidget {
                       children: <Widget>[
                         new Icon(Icons.person, color: Colors.green,),
                         new Container(width: 4,),
-                        new Text(
-                          '${checkData.creditorName}',
-                          style: new TextStyle(
-                            fontSize: 18,
+                        if(checkType == CheckType.received)
+                          new Text(
+                            '${checkData.creditorName}',
+                            style: new TextStyle(
+                              fontSize: 18,
+                            ),
                           ),
-                        ),
+                        if(checkType == CheckType.sent)
+                          new Text(
+                            'You',
+                            style: new TextStyle(
+                              fontSize: 18,
+                            ),
+                          ),
                       ],
                     ),
                   ),
@@ -95,12 +99,20 @@ class CheckCard extends StatelessWidget {
                       children: <Widget>[
                         new Icon(Icons.person, color: Colors.red,),
                         new Container(width: 4,),
-                        new Text(
-                          '${checkData.debitorName}',
-                          style: new TextStyle(
-                            fontSize: 18,
+                        if(checkType == CheckType.sent)
+                          new Text(
+                            '${checkData.debitorName}',
+                            style: new TextStyle(
+                              fontSize: 18,
+                            ),
                           ),
-                        ),
+                        if(checkType == CheckType.received)
+                          new Text(
+                            'You',
+                            style: new TextStyle(
+                              fontSize: 18,
+                            ),
+                          ),
                       ],
                     ),
                   ),
@@ -188,38 +200,48 @@ class CheckCard extends StatelessWidget {
                 ),
                 new FlatButton(
                   child: new Text('NUDGE'),
-                  onPressed: () async {
-                    var result = await showDialog(
-                      context: context,
-                      builder: (BuildContext context) {
-                        return new AlertDialog(
-                          title: new Text('Confirmation'),
-                          content: new Text('Are you sure you want to nudge ${checkData.debitorName}?'),
-                          actions: <Widget>[
-                            new FlatButton(
-                              child: new Text('NO'),
-                              onPressed: () {
-                                Navigator.of(context).pop(false);
-                              },
-                            ),
-                            new FlatButton(
-                              child: new Text('YES'),
-                              onPressed: () {
-                                Navigator.of(context).pop(true);
-                              },
-                            ),
-                          ],
-                        );
-                      },
-                    );
-                    if(result == true)
-                      BlocProvider.of<CheckBloc>(context).add(Nudge(checkData));
-                  },
+
+                  onPressed: _canNudge() ?  () => _nudge(context) : null,
                 ),
               ],
             ),
         ],
       ),
     );
+  }
+
+  dynamic _canNudge() {
+    bool nudge = true;
+    if(checkData.lastNudge != null && checkData.lastNudge.difference(DateTime.now()) < new Duration(days: 1))
+      nudge = false;
+    return nudge;
+  }
+
+  void _nudge(context) async {
+    var result = await showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return new AlertDialog(
+          title: new Text('Confirmation'),
+          content: new Text('Are you sure you want to nudge ${checkData.debitorName}?'),
+          actions: <Widget>[
+            new FlatButton(
+              child: new Text('NO'),
+              onPressed: () {
+                Navigator.of(context).pop(false);
+              },
+            ),
+            new FlatButton(
+              child: new Text('YES'),
+              onPressed: () {
+                Navigator.of(context).pop(true);
+              },
+            ),
+          ],
+        );
+      },
+    );
+    if(result == true)
+      BlocProvider.of<CheckBloc>(context).add(Nudge(checkData));
   }
 }

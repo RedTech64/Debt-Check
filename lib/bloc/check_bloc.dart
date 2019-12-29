@@ -115,7 +115,23 @@ class CheckBloc extends Bloc<CheckEvent,CheckState> {
       });
     }
     if(event is Nudge) {
-      //TODO: Implement nudge
+      if(event.checkData.lastNudge == null) {
+        http.post(
+          'https://us-central1-redtech-debt-check.cloudfunctions.net/nudge',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: json.encode({
+            'fromName': event.checkData.creditorName,
+            'uid': event.checkData.debitorUID,
+            'description': event.checkData.description,
+            'amount': event.checkData.amount.toStringAsFixed(2),
+          }),
+        );
+        Firestore.instance.collection('checks').document(event.checkData.id).updateData({
+          'lastNudge': Timestamp.fromDate(DateTime.now()),
+        });
+      }
     }
   }
 
