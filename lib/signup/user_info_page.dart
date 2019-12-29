@@ -33,6 +33,10 @@ class _UserInfoPageState extends State<UserInfoPage> {
       _firstNameController = new TextEditingController(text: userData.firstName);
       _lastNameController = new TextEditingController(text: userData.lastName);
       _usernameController = new TextEditingController(text: userData.username);
+    } else {
+      _firstNameController = new TextEditingController();
+      _lastNameController = new TextEditingController();
+      _usernameController = new TextEditingController();
     }
   }
 
