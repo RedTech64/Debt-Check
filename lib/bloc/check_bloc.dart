@@ -1,10 +1,12 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:bloc/bloc.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:debtcheck/bloc/user_bloc.dart';
 import 'package:debtcheck/home.dart';
 import 'package:equatable/equatable.dart';
+import 'package:http/http.dart' as http;
 
 abstract class CheckEvent extends Equatable{
   const CheckEvent();
@@ -16,11 +18,9 @@ abstract class CheckEvent extends Equatable{
 class StartCheckBloc extends CheckEvent {}
 
 class Update extends CheckEvent {
-  List<CheckData> checkData;
+  final List<CheckData> checkData;
 
-  Update(QuerySnapshot snapshot) {
-    this.checkData = snapshot.documents.map((doc) => new CheckData.fromDoc(doc)).toList();
-  }
+  Update(QuerySnapshot snapshot) : this.checkData = snapshot.documents.map((doc) => new CheckData.fromDoc(doc)).toList();
 
   @override
   List<CheckData> get props => checkData;

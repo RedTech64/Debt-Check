@@ -23,13 +23,12 @@ class StartUserBloc extends UserEvent {
 }
 
 class Update extends UserEvent {
-  UserData userData;
-  List<UserData> friends;
+  final UserData userData;
+  final List<UserData> friends;
 
-  Update(DocumentSnapshot userDoc, List<DocumentSnapshot> friendDocs) {
-    this.userData = new UserData.fromDoc(userDoc);
+  Update(DocumentSnapshot userDoc, List<DocumentSnapshot> friendDocs) :
+    this.userData = new UserData.fromDoc(userDoc),
     this.friends = friendDocs.map((doc) => new UserData.fromDoc(doc)).toList();
-  }
 
   @override
   List get props => [userData,friends];
