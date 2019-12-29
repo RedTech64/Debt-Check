@@ -18,7 +18,6 @@ class _VerificationCodePageState extends State<VerificationCodePage> {
   _VerificationCodePageState(this._verificationId);
   String _verificationId;
   final TextEditingController _smsController = TextEditingController();
-  String _message = '';
   final _formKey = GlobalKey<FormState>();
   bool _incorrect = false;
 

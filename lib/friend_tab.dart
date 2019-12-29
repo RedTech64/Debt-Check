@@ -1,7 +1,6 @@
 import 'package:circular_profile_avatar/circular_profile_avatar.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:debtcheck/bloc/check_bloc.dart';
-import 'package:debtcheck/check_list.dart';
 import 'package:debtcheck/home.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
