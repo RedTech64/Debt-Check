@@ -94,7 +94,7 @@ class _VerificationCodePageState extends State<VerificationCodePage> {
                   String result = await _signInWithPhoneNumber();
                   if(result != null) {
                     DocumentSnapshot userDoc = await Firestore.instance.collection('users').document(result).get();
-                    if(userDoc.exists) {
+                    if(userDoc.exists && userDoc.data['uid'] != null) {
                       Navigator.pushNamed(context, '/home', arguments: result);
                     } else {
                       Navigator.of(context).pushReplacement(
@@ -143,6 +143,9 @@ class _VerificationCodePageState extends State<VerificationCodePage> {
     final FirebaseUser currentUser = await _auth.currentUser();
     assert(user.uid == currentUser.uid);
     if (user != null) {
+      await Firestore.instance.collection('users').document(currentUser.uid).setData({
+        'phone': user.phoneNumber,
+      });
       return user.uid;
     } else {
       return null;

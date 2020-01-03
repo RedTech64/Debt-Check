@@ -106,6 +106,9 @@ class _HomePageState extends State<HomePage> {
           'paid': false,
           'lastNudge': Timestamp.fromDate(DateTime.now()),
         });
+        if(checkData.debitorUID[0] == '+') {
+          //TODO: HTTP request to initiate invite, send check id
+        }
       }
     }
   }
@@ -146,6 +149,7 @@ class CheckData {
 }
 
 class UserData {
+  String phone;
   String firstName;
   String lastName;
   String fullName;
@@ -156,9 +160,9 @@ class UserData {
   double debt;
   String profilePicURL;
 
-  UserData({this.firstName,this.lastName,this.fullName,this.username,this.uid,this.friendUIDs,this.credit,this.debt,this.profilePicURL});
+  UserData({this.phone,this.firstName,this.lastName,this.fullName,this.username,this.uid,this.friendUIDs,this.credit,this.debt,this.profilePicURL});
 
   factory UserData.fromDoc(DocumentSnapshot doc) {
-    return new UserData(firstName: doc.data['firstName'], lastName: doc.data['lastName'], fullName: doc.data['fullName'], username: doc.data['username'], uid: doc.data['uid'], friendUIDs: new List<String>.from(doc.data['friends'],), credit: doc.data['credit'].toDouble(), debt: doc.data['debt'].toDouble(), profilePicURL: doc.data['profilePicURL']);
+    return new UserData(phone: doc.data['phone'], firstName: doc.data['firstName'], lastName: doc.data['lastName'], fullName: doc.data['fullName'], username: doc.data['username'], uid: doc.data['uid'], friendUIDs: new List<String>.from(doc.data['friends'],), credit: doc.data['credit'].toDouble(), debt: doc.data['debt'].toDouble(), profilePicURL: doc.data['profilePicURL']);
   }
 }

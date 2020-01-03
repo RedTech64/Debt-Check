@@ -113,9 +113,12 @@ class _PhoneLoginPageState extends State<PhoneLoginPage> {
       await _auth.signInWithCredential(phoneAuthCredential);
       FirebaseUser user = await _auth.currentUser();
       DocumentSnapshot userDoc = await Firestore.instance.collection('users').document(user.uid).get();
-      if(userDoc.exists) {
+      if(userDoc.exists && userDoc.data['uid'] != null) {
         Navigator.pushNamed(context, '/home', arguments: user.uid);
       } else {
+        await Firestore.instance.collection('users').document(user.uid).setData({
+          'phone': user.phoneNumber,
+        });
         Navigator.of(context).pushReplacement(
           new MaterialPageRoute(
               builder: (BuildContext context) {

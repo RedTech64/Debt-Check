@@ -1,4 +1,5 @@
 import 'package:circular_profile_avatar/circular_profile_avatar.dart';
+import 'package:contacts_service/contacts_service.dart';
 import 'package:dynamic_theme/dynamic_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -67,6 +68,16 @@ class UserSearchDelegate extends SearchDelegate<UserData> {
     );
   }
 
+  Future<List<UserData>> getCombinedResults() async {
+    List<UserData> list = await searchUsers();
+    List<UserData> contacts = await searchContacts();
+    Map<String,bool> captured = {};
+    list.forEach((userData) => captured[userData.phone] = true);
+    list.addAll(contacts.where((userData) => !captured.containsKey(userData.phone)));
+    return list;
+
+  }
+
   Future<List<UserData>> searchUsers() async {
     if(query == "") {
       if(defaultList == null || defaultList.isEmpty)
@@ -79,8 +90,36 @@ class UserSearchDelegate extends SearchDelegate<UserData> {
       return docs.map((doc) => new UserData.fromDoc(doc));
     } else {
       QuerySnapshot docs = await Firestore.instance.collection('users').where('searchTerms.'+query.toLowerCase(), isEqualTo: true).limit(5).getDocuments();
-      return docs.documents.map((doc) => new UserData.fromDoc(doc)).toList();
+      List<UserData> list = [];
+      list.addAll(docs.documents.map((doc) => new UserData.fromDoc(doc)));
+      return list;
     }
+  }
+
+  Future<List<UserData>> searchContacts() async {
+    Iterable<Contact> contacts = await ContactsService.getContacts(query: query, withThumbnails: false);
+    List<UserData> list = [];
+    for(Contact contact in contacts) {
+      String phone;
+      if(contact.phones.length == 0)
+        phone = '';
+      else {
+        phone = contact.phones.elementAt(0).value;
+        phone = phone.replaceAll(' ', '');
+        phone = phone.replaceAll('-', '');
+        phone = phone.replaceAll(')', '');
+        phone = phone.replaceAll('(', '');
+        if(phone[0] != '+')
+          phone = '+1'+phone;
+      }
+      String lastName;
+      if(contact.familyName == null)
+        lastName = '';
+      else
+        lastName = contact.familyName;
+      list.add(new UserData(firstName: contact.givenName, lastName: lastName, profilePicURL: '', fullName: contact.displayName, username: phone, phone: phone));
+    }
+    return list;
   }
 
   Widget _getUserCard(UserData userData, context) {

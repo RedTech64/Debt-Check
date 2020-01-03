@@ -55,7 +55,7 @@ class _CheckCreateDialogState extends State<CheckCreateDialog> {
                   ),
                   findSuggestions: (String query) {
                     userSearchDelegate.query = query;
-                    return userSearchDelegate.searchUsers();
+                    return userSearchDelegate.getCombinedResults();
                   },
                   chipBuilder: (context, state, userData) {
                     return new InputChip(
@@ -79,6 +79,11 @@ class _CheckCreateDialogState extends State<CheckCreateDialog> {
                     );
                   },
                   suggestionBuilder: (context, state, userData) {
+                    String subtitle;
+                    if(userData.username == '')
+                      subtitle = 'Send via SMS';
+                    else
+                      subtitle = '@${userData.username}';
                     return ListTile(
                       key: ObjectKey(userData),
                       leading: new CircularProfileAvatar(
@@ -96,7 +101,7 @@ class _CheckCreateDialogState extends State<CheckCreateDialog> {
                         borderColor: Colors.black,
                       ),
                       title: new Text(userData.fullName),
-                      subtitle: new Text('@'+userData.username),
+                      subtitle: new Text(subtitle),
                       onTap: () => state.selectSuggestion(userData),
                     );
                   },

@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'signup/phone_login_page.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -27,6 +28,7 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
+    PermissionHandler().requestPermissions([PermissionGroup.contacts]);
     _firebaseMessaging.requestNotificationPermissions();
     _firebaseMessaging.configure(
       onMessage: (Map<String, dynamic> message) async {
@@ -120,7 +122,7 @@ class _MyAppState extends State<MyApp> {
       Navigator.of(context).pushReplacementNamed('/signup');
     } else {
       DocumentSnapshot userDoc = await Firestore.instance.collection('users').document(user.uid).get();
-      if(!userDoc.exists)
+      if(!userDoc.exists || userDoc.data['uid'] == null)
         Navigator.of(context).pushReplacementNamed('/signup');
       else
         Navigator.of(context).pushReplacementNamed('/home', arguments: user.uid);

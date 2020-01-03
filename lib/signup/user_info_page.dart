@@ -273,7 +273,7 @@ class _UserInfoPageState extends State<UserInfoPage> {
       });
 
     } else {
-      return Firestore.instance.collection('users').document(userData.uid).setData({
+      return Firestore.instance.collection('users').document(userData.uid).updateData({
         'uid': userData.uid,
         'fullName': _firstNameController.text+" "+_lastNameController.text,
         'firstName': _firstNameController.text,

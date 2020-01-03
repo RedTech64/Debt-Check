@@ -87,7 +87,8 @@ class UserBloc extends Bloc<UserEvent,UserState> {
             List<Future<DocumentSnapshot>> futures = [];
             var userIds = doc.data['friends'];
             userIds.forEach((id) {
-              futures.add(Firestore.instance.collection('users').document(id).get());
+              if(id[0] != '+')
+                futures.add(Firestore.instance.collection('users').document(id).get());
             });
             List<DocumentSnapshot> docs = await Future.wait(futures);
             add(Update(doc,docs));
