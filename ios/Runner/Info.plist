@@ -37,6 +37,8 @@
 	<string>Camera may be needed for profile picture.</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>Microphone may be needed for profile picture.</string>
+	<key>NSContactsUsageDescription</key>
+    <string>Contacts can be used to invite users not on Debt Check</string>
 	<key>CFBundleVersion</key>
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
 	<key>LSRequiresIPhoneOS</key>

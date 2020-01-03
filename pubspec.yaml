@@ -36,6 +36,8 @@ dependencies:
   dynamic_theme: ^1.0.0
   firebase_storage: ^3.1.0
   circular_profile_avatar: ^1.0.6
+  contacts_service: ^0.3.10
+  permission_handler: ^4.0.0
 
 dev_dependencies:
   flutter_test:
