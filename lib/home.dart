@@ -89,7 +89,7 @@ class _HomePageState extends State<HomePage> {
     );
     if(checks != null) {
       for(CheckData checkData in checks) {
-        if(!userData.friendUIDs.contains(checkData.debitorUID)) {
+        if(!userData.friendUIDs.contains(checkData.debitorUID) && checkData.debitorUID[0] != '+') {
           Firestore.instance.collection('users').document(userData.uid).updateData({
             'friends': FieldValue.arrayUnion([checkData.debitorUID]),
           });

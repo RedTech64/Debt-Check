@@ -117,7 +117,7 @@ class UserSearchDelegate extends SearchDelegate<UserData> {
         lastName = '';
       else
         lastName = contact.familyName;
-      list.add(new UserData(firstName: contact.givenName, lastName: lastName, profilePicURL: '', fullName: contact.displayName, username: phone, phone: phone));
+      list.add(new UserData(firstName: contact.givenName, lastName: lastName, profilePicURL: '', fullName: contact.displayName, uid: phone, phone: phone, username: ''));
     }
     return list;
   }

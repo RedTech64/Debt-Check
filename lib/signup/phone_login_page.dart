@@ -116,9 +116,6 @@ class _PhoneLoginPageState extends State<PhoneLoginPage> {
       if(userDoc.exists && userDoc.data['uid'] != null) {
         Navigator.pushNamed(context, '/home', arguments: user.uid);
       } else {
-        await Firestore.instance.collection('users').document(user.uid).setData({
-          'phone': user.phoneNumber,
-        });
         Navigator.of(context).pushReplacement(
           new MaterialPageRoute(
               builder: (BuildContext context) {

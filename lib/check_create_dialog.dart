@@ -64,7 +64,7 @@ class _CheckCreateDialogState extends State<CheckCreateDialog> {
                         userData.profilePicURL,
                         radius: 20,
                         initialsText: new Text(
-                          userData.firstName.substring(0,1)+userData.lastName.substring(0,1),
+                          _getInitials(userData),
                           style: new TextStyle(
                               color: Colors.black
                           ),
@@ -90,7 +90,7 @@ class _CheckCreateDialogState extends State<CheckCreateDialog> {
                         userData.profilePicURL,
                         radius: 20,
                         initialsText: new Text(
-                          userData.firstName.substring(0,1)+userData.lastName.substring(0,1),
+                          _getInitials(userData),
                           style: new TextStyle(
                               color: Colors.black
                           ),
@@ -177,5 +177,14 @@ class _CheckCreateDialogState extends State<CheckCreateDialog> {
         ),
       ),
     );
+  }
+
+  String _getInitials(UserData userData) {
+    String initials = '';
+    if(userData.firstName != null && userData.fullName.length > 0)
+      initials += userData.firstName.substring(0,1);
+    if(userData.lastName != null && userData.lastName.length > 0)
+      initials += userData.lastName.substring(0,1);
+    return initials;
   }
 }

@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -8,6 +9,8 @@ import 'package:image_picker/image_picker.dart';
 import 'package:simple_image_crop/simple_image_crop.dart';
 
 import '../home.dart';
+
+final FirebaseAuth _auth = FirebaseAuth.instance;
 
 class UserInfoPage extends StatefulWidget {
   final UserData userData;
@@ -273,8 +276,10 @@ class _UserInfoPageState extends State<UserInfoPage> {
       });
 
     } else {
-      return Firestore.instance.collection('users').document(userData.uid).updateData({
+      FirebaseUser user = await _auth.currentUser();
+      return Firestore.instance.collection('users').document(userData.uid).setData({
         'uid': userData.uid,
+        'phone': user.phoneNumber,
         'fullName': _firstNameController.text+" "+_lastNameController.text,
         'firstName': _firstNameController.text,
         'lastName': _lastNameController.text,
