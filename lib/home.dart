@@ -50,9 +50,12 @@ class _HomePageState extends State<HomePage> {
                     }
                   },
                 ),
-                new IconButton(
-                  icon: new Icon(Icons.person),
-                  onPressed: () => _openProfileDialog(context),
+                new GestureDetector(
+                  child: new IconButton(
+                    icon: new Icon(Icons.person),
+                    onPressed: () => _openProfileDialog(context),
+                  ),
+                  onLongPress: () => _openDebtKingMenu(context),
                 ),
               ],
             ),

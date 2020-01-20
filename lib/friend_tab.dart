@@ -25,6 +25,41 @@ class _FriendsTabState extends State<FriendsTab> {
               child: new Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: <Widget>[
+                  if(userBlocState.userData.uid != null)
+                    new Card(
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        mainAxisSize: MainAxisSize.min,
+                        children: <Widget>[
+                          Expanded(
+                            child: Container(
+                              padding: EdgeInsets.all(8),
+                              child: new Text(
+                                'Hello, ${userBlocState.userData.firstName}! You have a net balance of \$${(userBlocState.userData.credit-userBlocState.userData.debt).toStringAsFixed(2)}.',
+                                style: new TextStyle(
+                                  fontSize: 16,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  if(userBlocState.friends.isEmpty && userBlocState.userData.uid != null)
+                    Container(
+                      padding: EdgeInsets.all(8),
+                      child: new Card(
+                        child: Container(
+                          padding: EdgeInsets.all(8),
+                          child: new Text(
+                            'Tap the button below to add a friend! If your friend does not use Debt Check, you can invite them by sending them a Debt Check!',
+                            textAlign: TextAlign.center,
+                            style: new TextStyle(),
+                          ),
+                        ),
+                      ),
+                    ),
                   ...userBlocState.friends.map((friend) => new FriendCard(friend,checkBlocState.getDebtTo(friend.uid),checkBlocState.getDebtFrom(friend.uid),checkBlocState.getFromUser(friend.uid).length)),
                   new FlatButton(
                     child: new Row(
@@ -40,10 +75,7 @@ class _FriendsTabState extends State<FriendsTab> {
                         context: context,
                         delegate: new UserSearchDelegate(exclude: [BlocProvider.of<UserBloc>(context).state.userData.uid, ...userBlocState.friends.map((user) => user.uid)],),
                       );
-                      if(newFriend != null && userBlocState.friends.where((friend) => friend.uid == newFriend.uid).length == 0)
-                        Firestore.instance.collection('users').document(BlocProvider.of<UserBloc>(context).state.userData.uid).updateData({
-                          'friends': FieldValue.arrayUnion([newFriend.uid]),
-                        });
+                      BlocProvider.of<UserBloc>(context).add(new AddFriend(newFriend));
                     },
                   ),
                 ],

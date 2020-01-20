@@ -42,9 +42,11 @@ class _CheckCreateDialogState extends State<CheckCreateDialog> {
           key: _formkey,
           child: new Column(
             children: <Widget>[
+              Container(height: 8,),
               Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: FormBuilderChipsInput(
+                  validators: [FormBuilderValidators.required()],
                   attribute: 'users_selector',
                   decoration: new InputDecoration(
                     prefixIcon: new Icon(Icons.people),
@@ -114,6 +116,7 @@ class _CheckCreateDialogState extends State<CheckCreateDialog> {
               Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: new FormBuilderDateTimePicker(
+                  validators: [FormBuilderValidators.required()],
                   attribute: 'date',
                   initialValue: new DateTime.now(),
                   inputType: InputType.date,
@@ -134,7 +137,9 @@ class _CheckCreateDialogState extends State<CheckCreateDialog> {
               ),
               Padding(
                 padding: const EdgeInsets.all(8.0),
-                child: new TextFormField(
+                child: new FormBuilderTextField(
+                  attribute: 'amount',
+                  validators: [FormBuilderValidators.min(0.01)],
                   controller: amountController,
                   keyboardType: TextInputType.number,
                   decoration: new InputDecoration(
