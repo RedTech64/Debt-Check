@@ -37,6 +37,11 @@ class Nudge extends CheckEvent {
   Nudge(this.checkData);
 }
 
+class CreateCheck extends CheckEvent {
+  final CheckData checkData;
+  CreateCheck(this.checkData);
+}
+
 abstract class CheckState extends Equatable {
   const CheckState();
 
@@ -146,6 +151,30 @@ class CheckBloc extends Bloc<CheckEvent,CheckState> {
           'lastNudge': Timestamp.fromDate(DateTime.now()),
         });
       }
+    if(event is CreateCheck) {
+      analytics.logEvent(
+        name: 'create_check',
+        parameters: <String, dynamic> {
+          'description': event.checkData.description,
+          'amount': event.checkData.amount,
+        }
+      );
+      UserData userData = userBloc.state.userData;
+      if(!userData.friendUIDs.contains(event.checkData.debitorUID) && event.checkData.debitorUID[0] != '+') {
+        userBloc.add(new AddFriend(new UserData(uid: event.checkData.debitorUID)));
+      }
+      Firestore.instance.collection('checks').add({
+        'description': event.checkData.description,
+        'amount': event.checkData.amount,
+        'date': Timestamp.fromDate(event.checkData.date),
+        'creditorName': userData.fullName,
+        'creditorUID': userData.uid,
+        'debitorName': event.checkData.debitorName,
+        'debitorUID': event.checkData.debitorUID,
+        'involved': [userData.uid, event.checkData.debitorUID],
+        'paid': false,
+        'lastNudge': Timestamp.fromDate(DateTime.now()),
+      });
     }
   }
 

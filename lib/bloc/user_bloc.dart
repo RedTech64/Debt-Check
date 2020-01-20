@@ -35,6 +35,11 @@ class Update extends UserEvent {
   List get props => [userData,friends];
 }
 
+class AddFriend extends UserEvent {
+  final UserData friend;
+  AddFriend(this.friend);
+}
+
 abstract class UserState extends Equatable {
   final UserData userData = new UserData();
   final List<UserData> friends = [];
@@ -122,6 +127,16 @@ class UserBloc extends Bloc<UserEvent,UserState> {
             );
       }
       yield Loaded(event.userData,event.friends,state.userData.uid);
+    }
+
+    if(event is AddFriend) {
+      analytics.logEvent(
+        name: 'add_friend',
+      );
+      if(event.friend != null && state.friends.where((friend) => friend.uid == event.friend.uid).length == 0)
+        Firestore.instance.collection('users').document(state.userData.uid).updateData({
+          'friends': FieldValue.arrayUnion([event.friend.uid]),
+        });
     }
   }
 

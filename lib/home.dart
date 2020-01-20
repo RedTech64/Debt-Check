@@ -89,36 +89,31 @@ class _HomePageState extends State<HomePage> {
     );
     if(checks != null) {
       for(CheckData checkData in checks) {
-        if(!userData.friendUIDs.contains(checkData.debitorUID) && checkData.debitorUID[0] != '+') {
-          Firestore.instance.collection('users').document(userData.uid).updateData({
-            'friends': FieldValue.arrayUnion([checkData.debitorUID]),
-          });
-        }
-        Firestore.instance.collection('checks').add({
-          'description': checkData.description,
-          'amount': checkData.amount,
-          'date': Timestamp.fromDate(checkData.date),
-          'creditorName': userData.fullName,
-          'creditorUID': userData.uid,
-          'debitorName': checkData.debitorName,
-          'debitorUID': checkData.debitorUID,
-          'involved': [userData.uid, checkData.debitorUID],
-          'paid': false,
-          'lastNudge': Timestamp.fromDate(DateTime.now()),
-        });
-        if(checkData.debitorUID[0] == '+') {
-          //TODO: HTTP request to initiate invite, send check id
-        }
+        BlocProvider.of<CheckBloc>(context).add(new CreateCheck(checkData));
       }
     }
   }
 
   void _openProfileDialog(context) {
-    UserBloc userBloc = BlocProvider.of<UserBloc>(context);
+    UserState userState = BlocProvider.of<UserBloc>(context).state;
     showDialog(
         context: context,
         builder: (BuildContext context) {
-          return new ProfileDialog(userBloc.state.userData);
+          return new ProfileDialog(userState.userData);
+        }
+    );
+  }
+
+  void _openDebtKingMenu(context) async {
+   QuerySnapshot docs= await Firestore.instance.collection('users').orderBy('debt', descending: true).limit(1).getDocuments();
+   UserData king = new UserData.fromDoc(docs.documents[0]);
+    showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return new AlertDialog(
+            title: new Text('Debt King'),
+            content: new Text('The Debt King is: ${king.fullName}, with \$${king.debt} in debt!'),
+          );
         }
     );
   }
@@ -163,6 +158,9 @@ class UserData {
   UserData({this.phone,this.firstName,this.lastName,this.fullName,this.username,this.uid,this.friendUIDs,this.credit,this.debt,this.profilePicURL});
 
   factory UserData.fromDoc(DocumentSnapshot doc) {
-    return new UserData(phone: doc.data['phone'], firstName: doc.data['firstName'], lastName: doc.data['lastName'], fullName: doc.data['fullName'], username: doc.data['username'], uid: doc.data['uid'], friendUIDs: new List<String>.from(doc.data['friends'],), credit: doc.data['credit'].toDouble(), debt: doc.data['debt'].toDouble(), profilePicURL: doc.data['profilePicURL']);
+    if(!doc.exists)
+      return new UserData();
+    else
+      return new UserData(phone: doc.data['phone'], firstName: doc.data['firstName'], lastName: doc.data['lastName'], fullName: doc.data['fullName'], username: doc.data['username'], uid: doc.data['uid'], friendUIDs: new List<String>.from(doc.data['friends'],), credit: doc.data['credit'].toDouble(), debt: doc.data['debt'].toDouble(), profilePicURL: doc.data['profilePicURL']);
   }
 }
