@@ -33,6 +33,8 @@ class _PhoneLoginPageState extends State<PhoneLoginPage> {
               crossAxisAlignment: CrossAxisAlignment.center,
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
+                Spacer(flex: 5,),
+                new Image(image: AssetImage("assets/icon_transparent.png"), height: 150,),
                 Spacer(flex: 1,),
                 Container(
                   child: const Text(
@@ -101,7 +103,7 @@ class _PhoneLoginPageState extends State<PhoneLoginPage> {
                     style: TextStyle(color: Colors.red),
                   ),
                 ),
-                Spacer(flex: 2,),
+                Spacer(flex: 10,),
               ],
             ),
       ),
