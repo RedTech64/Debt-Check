@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:debtcheck/signup/user_info_page.dart';
+import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
@@ -20,6 +21,7 @@ class _VerificationCodePageState extends State<VerificationCodePage> {
   final TextEditingController _smsController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   bool _incorrect = false;
+  static FirebaseAnalytics analytics = FirebaseAnalytics();
 
   @override
   Widget build(BuildContext context) {
@@ -95,6 +97,7 @@ class _VerificationCodePageState extends State<VerificationCodePage> {
                   if(result != null) {
                     DocumentSnapshot userDoc = await Firestore.instance.collection('users').document(result).get();
                     if(userDoc.exists && userDoc.data['uid'] != null) {
+                      analytics.logLogin(loginMethod: 'phone');
                       Navigator.pushNamed(context, '/home', arguments: result);
                     } else {
                       Navigator.of(context).pushReplacement(

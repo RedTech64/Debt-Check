@@ -6,6 +6,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:debtcheck/bloc/user_bloc.dart';
 import 'package:debtcheck/home.dart';
 import 'package:equatable/equatable.dart';
+import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:http/http.dart' as http;
 
 abstract class CheckEvent extends Equatable{
@@ -91,6 +92,7 @@ class CheckBloc extends Bloc<CheckEvent,CheckState> {
   final UserBloc userBloc;
   StreamSubscription docSubscription;
   StreamSubscription userSubscription;
+  static FirebaseAnalytics analytics = FirebaseAnalytics();
   
   CheckBloc({this.userBloc});
   
@@ -110,11 +112,23 @@ class CheckBloc extends Bloc<CheckEvent,CheckState> {
       yield Loaded(event.checkData,userBloc.state.userData.uid);
     }
     if(event is MarkAsPaid) {
+      analytics.logEvent(
+        name: 'mark_as_paid',
+        parameters: <String, dynamic> {
+          'days_past': DateTime.now().difference(event.checkData.date).inDays,
+        }
+      );
       Firestore.instance.collection('checks').document(event.checkData.id).updateData({
         'paid': true,
       });
     }
     if(event is Nudge) {
+      analytics.logEvent(
+        name: 'nudge',
+        parameters: <String, dynamic> {
+          'days_past': DateTime.now().difference(event.checkData.date).inDays,
+        }
+      );
       if(event.checkData.lastNudge == null) {
         http.post(
           'https://us-central1-redtech-debt-check.cloudfunctions.net/nudge',

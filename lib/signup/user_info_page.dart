@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
@@ -28,6 +29,7 @@ class _UserInfoPageState extends State<UserInfoPage> {
   bool _taken = false;
   File profilePic;
   _UserInfoPageState(this.userData);
+  static FirebaseAnalytics analytics = FirebaseAnalytics();
 
   @override
   void initState() {
@@ -243,6 +245,7 @@ class _UserInfoPageState extends State<UserInfoPage> {
     return _taken;
   }
   Future _createUserDoc() async {
+
     Map<String,bool> searchTerms = {};
     String fullName = _firstNameController.text+" "+_lastNameController.text;
     for(int i = 0; i < fullName.length; i++) {
@@ -262,6 +265,7 @@ class _UserInfoPageState extends State<UserInfoPage> {
       url = await storageTaskSnapshot.ref.getDownloadURL();
     }
     if(userData.username != null) {
+      analytics.logEvent(name: 'edit_profile');
       if(url != '') {
         await Firestore.instance.collection('users').document(userData.uid).updateData({
           'profilePicURL': url,
@@ -274,9 +278,9 @@ class _UserInfoPageState extends State<UserInfoPage> {
         'username': _usernameController.text,
         'searchTerms': searchTerms,
       });
-
     } else {
       FirebaseUser user = await _auth.currentUser();
+      analytics.logSignUp(signUpMethod: 'phone');
       return Firestore.instance.collection('users').document(userData.uid).setData({
         'uid': userData.uid,
         'phone': user.phoneNumber,

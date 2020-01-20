@@ -1,6 +1,9 @@
+import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:debtcheck/signup/phone_verification_page.dart';
 import 'package:debtcheck/signup/user_info_page.dart';
+import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -19,6 +22,7 @@ class _PhoneLoginPageState extends State<PhoneLoginPage> {
 
   String _message = '';
   String _verificationId;
+  static FirebaseAnalytics analytics = FirebaseAnalytics();
 
   @override
   Widget build(BuildContext context) {
@@ -114,6 +118,7 @@ class _PhoneLoginPageState extends State<PhoneLoginPage> {
       FirebaseUser user = await _auth.currentUser();
       DocumentSnapshot userDoc = await Firestore.instance.collection('users').document(user.uid).get();
       if(userDoc.exists && userDoc.data['uid'] != null) {
+        analytics.logLogin(loginMethod: 'phone');
         Navigator.pushNamed(context, '/home', arguments: user.uid);
       } else {
         Navigator.of(context).pushReplacement(

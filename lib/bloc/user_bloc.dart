@@ -5,6 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:debtcheck/home.dart';
 import 'package:dynamic_theme/dynamic_theme.dart';
 import 'package:equatable/equatable.dart';
+import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/material.dart';
 
 abstract class UserEvent extends Equatable{
@@ -71,17 +72,18 @@ class Loaded extends UserState {
 class UserBloc extends Bloc<UserEvent,UserState> {
   StreamSubscription subscription;
   BuildContext context;
+  static FirebaseAnalytics analytics = FirebaseAnalytics();
 
   @override
   UserState get initialState => InitialState(new UserData(uid: null));
 
   @override
   Stream<UserState> mapEventToState(UserEvent event) async* {
-    print(event.toString());
     if(event is StartUserBloc) {
       context = event.context;
       subscription?.cancel();
       if(event.uid != null && event.uid != "") {
+        analytics.setUserId(event.uid);
         subscription = Firestore.instance.collection('users').document(event.uid).snapshots().listen((doc) async {
           if(doc.exists) {
             List<Future<DocumentSnapshot>> futures = [];

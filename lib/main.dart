@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'signup/phone_login_page.dart';
 import 'package:flutter/material.dart';
@@ -24,10 +25,13 @@ class _MyAppState extends State<MyApp> {
   FirebaseAuth _auth = FirebaseAuth.instance;
   FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
   String fcmToken;
+  static FirebaseAnalytics analytics = FirebaseAnalytics();
 
   @override
   void initState() {
     super.initState();
+    analytics.setAnalyticsCollectionEnabled(true);
+    analytics.logAppOpen();
     PermissionHandler().requestPermissions([PermissionGroup.contacts]);
     _firebaseMessaging.requestNotificationPermissions();
     _firebaseMessaging.configure(
@@ -59,7 +63,9 @@ class _MyAppState extends State<MyApp> {
                 ),
               ),
               themedWidgetBuilder: (context, theme) {
+                analytics.setUserProperty(name: 'brightness', value: theme.brightness.toString());
                 return MaterialApp(
+                  debugShowCheckedModeBanner: false,
                   title: 'Debt Check',
                   initialRoute: start,
                   theme: theme,
