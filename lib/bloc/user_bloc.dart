@@ -40,6 +40,11 @@ class AddFriend extends UserEvent {
   AddFriend(this.friend);
 }
 
+class UpdateFriend extends UserEvent {
+  final String friendUID;
+  UpdateFriend(this.friendUID);
+}
+
 abstract class UserState extends Equatable {
   final UserData userData = new UserData();
   final List<UserData> friends = [];
@@ -102,6 +107,16 @@ class UserBloc extends Bloc<UserEvent,UserState> {
           }
         });
       }
+    }
+    if(event is UpdateFriend) {
+      List<UserData> friends = state.friends;
+      for(int i = 0; i < friends.length; i++) {
+        if(friends[i].uid == event.friendUID) {
+          DocumentSnapshot newData = await Firestore.instance.collection('users').document(event.friendUID).get();
+          friends[i] = new UserData.fromDoc(newData);
+        }
+      }
+      yield Loaded(state.userData,friends,state.userData.uid);
     }
     if(event is Update) {
       if(event.userData != null && event.userData.debt != null && event.userData.credit != null) {

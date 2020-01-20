@@ -21,64 +21,71 @@ class _FriendsTabState extends State<FriendsTab> {
       builder: (context, userBlocState) {
         return BlocBuilder<CheckBloc,CheckState>(
           builder: (context, checkBlocState) {
-            return new SingleChildScrollView(
-              child: new Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: <Widget>[
-                  if(userBlocState.userData.uid != null)
-                    new Card(
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        mainAxisSize: MainAxisSize.min,
-                        children: <Widget>[
-                          Expanded(
-                            child: Container(
-                              padding: EdgeInsets.all(8),
-                              child: new Text(
-                                'Hello, ${userBlocState.userData.firstName}! You have a net balance of \$${(userBlocState.userData.credit-userBlocState.userData.debt).toStringAsFixed(2)}.',
-                                style: new TextStyle(
-                                  fontSize: 16,
+            return RefreshIndicator(
+              onRefresh: () {
+                BlocProvider.of<UserBloc>(context).add(StartUserBloc(userBlocState.userData.uid,context));
+                return new Future.delayed(new Duration(seconds: 1));
+              },
+              child: new SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                child: new Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: <Widget>[
+                    if(userBlocState.userData.uid != null)
+                      new Card(
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          mainAxisSize: MainAxisSize.min,
+                          children: <Widget>[
+                            Expanded(
+                              child: Container(
+                                padding: EdgeInsets.all(8),
+                                child: new Text(
+                                  'Hello, ${userBlocState.userData.firstName}! You have a net balance of \$${(userBlocState.userData.credit-userBlocState.userData.debt).toStringAsFixed(2)}.',
+                                  style: new TextStyle(
+                                    fontSize: 16,
+                                  ),
+                                  textAlign: TextAlign.center,
                                 ),
-                                textAlign: TextAlign.center,
                               ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                    ),
-                  if(userBlocState.friends.isEmpty && userBlocState.userData.uid != null)
-                    Container(
-                      padding: EdgeInsets.all(8),
-                      child: new Card(
-                        child: Container(
-                          padding: EdgeInsets.all(8),
-                          child: new Text(
-                            'Tap the button below to add a friend! If your friend does not use Debt Check, you can invite them by sending them a Debt Check!',
-                            textAlign: TextAlign.center,
-                            style: new TextStyle(),
+                    if(userBlocState.friends.isEmpty && userBlocState.userData.uid != null)
+                      Container(
+                        padding: EdgeInsets.all(8),
+                        child: new Card(
+                          child: Container(
+                            padding: EdgeInsets.all(8),
+                            child: new Text(
+                              'Tap the button below to add a friend! If your friend does not use Debt Check, you can invite them by sending them a Debt Check!',
+                              textAlign: TextAlign.center,
+                              style: new TextStyle(),
+                            ),
                           ),
                         ),
                       ),
+                    ...userBlocState.friends.map((friend) => new FriendCard(friend,checkBlocState.getDebtTo(friend.uid),checkBlocState.getDebtFrom(friend.uid),checkBlocState.getFromUser(friend.uid).length)),
+                    new FlatButton(
+                      child: new Row(
+                        mainAxisSize: MainAxisSize.min,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: <Widget>[
+                          new Icon(Icons.add),
+                          new Text(' ADD FRIEND'),
+                        ],
+                      ),
+                      onPressed: () async {
+                        UserData newFriend = await showSearch<UserData>(
+                          context: context,
+                          delegate: new UserSearchDelegate(exclude: [BlocProvider.of<UserBloc>(context).state.userData.uid, ...userBlocState.friends.map((user) => user.uid)],),
+                        );
+                        BlocProvider.of<UserBloc>(context).add(new AddFriend(newFriend));
+                      },
                     ),
-                  ...userBlocState.friends.map((friend) => new FriendCard(friend,checkBlocState.getDebtTo(friend.uid),checkBlocState.getDebtFrom(friend.uid),checkBlocState.getFromUser(friend.uid).length)),
-                  new FlatButton(
-                    child: new Row(
-                      mainAxisSize: MainAxisSize.min,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: <Widget>[
-                        new Icon(Icons.add),
-                        new Text(' ADD FRIEND'),
-                      ],
-                    ),
-                    onPressed: () async {
-                      UserData newFriend = await showSearch<UserData>(
-                        context: context,
-                        delegate: new UserSearchDelegate(exclude: [BlocProvider.of<UserBloc>(context).state.userData.uid, ...userBlocState.friends.map((user) => user.uid)],),
-                      );
-                      BlocProvider.of<UserBloc>(context).add(new AddFriend(newFriend));
-                    },
-                  ),
-                ],
+                  ],
+                ),
               ),
             );
           }
@@ -108,7 +115,8 @@ class FriendCard extends StatelessWidget {
           Navigator.of(context).push(
             new MaterialPageRoute(
               builder: (BuildContext context) {
-                return new FriendPage(userData);
+                BlocProvider.of<UserBloc>(context).add(new UpdateFriend(userData.uid));
+                return new FriendPage(userData.uid);
               },
             ),
           );
