@@ -63,8 +63,8 @@ class _ProfileDialogState extends State<ProfileDialog> {
           FlatButton(
             child: new Text('SIGN OUT'),
             onPressed: () {
-              _auth.signOut();
               BlocProvider.of<UserBloc>(context).add(StartUserBloc(null, null));
+              _auth.signOut();
               DynamicTheme.of(context).setThemeData(
                 new ThemeData(
                   primarySwatch: Colors.green,

@@ -97,6 +97,7 @@ class UserBloc extends Bloc<UserEvent,UserState> {
               futures.add(Firestore.instance.collection('users').document(id).get());
             });
             List<DocumentSnapshot> docs = await Future.wait(futures);
+            docs = docs.where((doc) => doc.exists).toList();
             add(Update(doc,docs));
           }
         });

@@ -200,7 +200,6 @@ class CheckCard extends StatelessWidget {
                 ),
                 new FlatButton(
                   child: new Text('NUDGE'),
-
                   onPressed: _canNudge() ?  () => _nudge(context) : null,
                 ),
               ],
@@ -212,7 +211,7 @@ class CheckCard extends StatelessWidget {
 
   dynamic _canNudge() {
     bool nudge = true;
-    if(checkData.lastNudge != null && checkData.lastNudge.difference(DateTime.now()) < new Duration(days: 1))
+    if(checkData.lastNudge != null && DateTime.now().difference(checkData.lastNudge) < new Duration(days: 1))
       nudge = false;
     return nudge;
   }

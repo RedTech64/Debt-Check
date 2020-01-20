@@ -147,10 +147,11 @@ class CheckBloc extends Bloc<CheckEvent,CheckState> {
             'amount': event.checkData.amount.toStringAsFixed(2),
           }),
         );
-        Firestore.instance.collection('checks').document(event.checkData.id).updateData({
-          'lastNudge': Timestamp.fromDate(DateTime.now()),
-        });
       }
+      Firestore.instance.collection('checks').document(event.checkData.id).updateData({
+        'lastNudge': Timestamp.fromDate(DateTime.now()),
+      });
+    }
     if(event is CreateCheck) {
       analytics.logEvent(
         name: 'create_check',
