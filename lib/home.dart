@@ -87,7 +87,7 @@ class _HomePageState extends State<HomePage> {
   void _openCreateCheckDialog(UserData userData) async {
     List<CheckData> checks = await Navigator.of(context).push(
       new MaterialPageRoute(
-        builder: (BuildContext context) => new CheckCreateDialog(),
+        builder: (BuildContext context) => new CheckCreateDialog(BlocProvider.of<UserBloc>(context).state.friends.toList()),
       ),
     );
     if(checks != null) {

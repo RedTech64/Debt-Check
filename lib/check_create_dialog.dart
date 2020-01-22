@@ -7,11 +7,14 @@ import 'package:intl/intl.dart';
 import 'home.dart';
 
 class CheckCreateDialog extends StatefulWidget {
+  final List<UserData> friends;
+  CheckCreateDialog(this.friends);
   @override
-  _CheckCreateDialogState createState() => _CheckCreateDialogState();
+  _CheckCreateDialogState createState() => _CheckCreateDialogState(this.friends);
 }
 
 class _CheckCreateDialogState extends State<CheckCreateDialog> {
+  List<UserData> friends;
   String friendName;
   String friendUID;
   DateTime date = DateTime.now();
@@ -22,12 +25,14 @@ class _CheckCreateDialogState extends State<CheckCreateDialog> {
   List<UserData> users;
   final GlobalKey<FormBuilderState> _formkey = GlobalKey<FormBuilderState>();
 
+  _CheckCreateDialogState(this.friends);
+
   @override
   void initState() {
     super.initState();
     descriptionController = new TextEditingController();
     amountController = new MoneyMaskedTextController(leftSymbol: '', initialValue: 0, decimalSeparator: '.', thousandSeparator: ',');
-    userSearchDelegate = new UserSearchDelegate();
+    userSearchDelegate = new UserSearchDelegate(defaultList: this.friends);
     dateController = new TextEditingController();
   }
 
@@ -57,7 +62,7 @@ class _CheckCreateDialogState extends State<CheckCreateDialog> {
                   ),
                   findSuggestions: (String query) {
                     userSearchDelegate.query = query;
-                    return userSearchDelegate.getCombinedResults();
+                    return userSearchDelegate.getCombinedResults(users);
                   },
                   chipBuilder: (context, state, userData) {
                     return new InputChip(

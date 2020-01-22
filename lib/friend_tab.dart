@@ -79,7 +79,7 @@ class _FriendsTabState extends State<FriendsTab> {
                       onPressed: () async {
                         UserData newFriend = await showSearch<UserData>(
                           context: context,
-                          delegate: new UserSearchDelegate(exclude: [BlocProvider.of<UserBloc>(context).state.userData.uid, ...userBlocState.friends.map((user) => user.uid)],),
+                          delegate: new UserSearchDelegate(exclude: [BlocProvider.of<UserBloc>(context).state.userData, ...userBlocState.friends.map((user) => user)],),
                         );
                         BlocProvider.of<UserBloc>(context).add(new AddFriend(newFriend));
                       },

@@ -3,12 +3,13 @@ import 'package:contacts_service/contacts_service.dart';
 import 'package:dynamic_theme/dynamic_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'dart:async';
 import 'home.dart';
 
 class UserSearchDelegate extends SearchDelegate<UserData> {
-  List<String> defaultList = [];
-  List<String> exclude = [];
+  List<UserData> defaultList = [];
+  List<UserData> exclude = [];
 
   UserSearchDelegate({this.defaultList, this.exclude});
 
@@ -59,7 +60,8 @@ class UserSearchDelegate extends SearchDelegate<UserData> {
       builder: (context, future) {
         if(future.connectionState == ConnectionState.waiting)
           return Center(child: new CircularProgressIndicator());
-        future.data.removeWhere((user) => exclude.contains(user.uid));
+        List<String> excludedUIDs = exclude.map((user) => user.uid).toList();
+        future.data.removeWhere((user) => excludedUIDs.contains(user.uid));
         return new ListView.builder(
           itemCount: future.data.length,
           itemBuilder: (context, index) => _getUserCard(future.data[index], context),
@@ -68,12 +70,20 @@ class UserSearchDelegate extends SearchDelegate<UserData> {
     );
   }
 
-  Future<List<UserData>> getCombinedResults() async {
+  Future<List<UserData>> getCombinedResults(List<UserData> exclude) async {
+    this.exclude = exclude;
     List<UserData> list = await searchUsers();
-    List<UserData> contacts = await searchContacts();
-    Map<String,bool> captured = {};
-    list.forEach((userData) => captured[userData.phone] = true);
-    list.addAll(contacts.where((userData) => !captured.containsKey(userData.phone)));
+    PermissionStatus contactStatus = await PermissionHandler().checkPermissionStatus(PermissionGroup.contacts);
+    if(contactStatus == PermissionStatus.granted) {
+      List<UserData> contacts = await searchContacts();
+      Map<String,bool> captured = {};
+      list.forEach((userData) => captured[userData.phone] = true);
+      list.addAll(contacts.where((userData) => !captured.containsKey(userData.phone)));
+      if(this.exclude != null && this.exclude.isNotEmpty) {
+        List<String> excludedUIDs = this.exclude.map((user) => user.uid).toList();
+        list.removeWhere((user) => excludedUIDs.contains(user.uid));
+      }
+    }
     return list;
 
   }
@@ -82,12 +92,7 @@ class UserSearchDelegate extends SearchDelegate<UserData> {
     if(query == "") {
       if(defaultList == null || defaultList.isEmpty)
         return [];
-      List<Future<DocumentSnapshot>> futures = [];
-      defaultList.forEach((uid) {
-        futures.add(Firestore.instance.collection('users').document(uid).get());
-      });
-      List<DocumentSnapshot> docs = await Future.wait(futures);
-      return docs.map((doc) => new UserData.fromDoc(doc));
+      return this.defaultList;
     } else {
       QuerySnapshot docs = await Firestore.instance.collection('users').where('searchTerms.'+query.toLowerCase(), isEqualTo: true).limit(5).getDocuments();
       List<UserData> list = [];
