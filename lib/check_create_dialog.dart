@@ -171,12 +171,47 @@ class _CheckCreateDialogState extends State<CheckCreateDialog> {
               ),
               new RaisedButton(
                 child: const Text('DONE'),
-                onPressed: () {
+                onPressed: () async {
                   _formkey.currentState.save();
                   if (_formkey.currentState.validate()) {
-                    List<CheckData> checks = [];
-                    users.forEach((user) => checks.add(new CheckData(description: descriptionController.text, amount: amountController.numberValue, debitorUID: user.uid, debitorName: user.fullName, date: date)));
-                    Navigator.of(context).pop(checks);
+                    String confirmPeople = "";
+                    for (int i = 0; i < users.length; i++) {
+                      confirmPeople += users[i].firstName;
+                      if(i == users.length - 1)
+                        confirmPeople += "";
+                      else if(i == users.length - 2)
+                        confirmPeople += " & ";
+                      else
+                        confirmPeople += ", ";
+                    }
+                    var result = await showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return new AlertDialog(
+                          title: new Text('Confirmation'),
+                          content: new Text('Are you sure you want to send $confirmPeople a check for \$${amountController.numberValue.toStringAsFixed(2)}?'),
+                          actions: <Widget>[
+                            new FlatButton(
+                              child: new Text('NO'),
+                              onPressed: () {
+                                Navigator.of(context).pop(false);
+                              },
+                            ),
+                            new FlatButton(
+                              child: new Text('YES'),
+                              onPressed: () {
+                                Navigator.of(context).pop(true);
+                              },
+                            ),
+                          ],
+                        );
+                      },
+                    );
+                    if(result) {
+                      List<CheckData> checks = [];
+                      users.forEach((user) => checks.add(new CheckData(description: descriptionController.text, amount: amountController.numberValue, debitorUID: user.uid, debitorName: user.fullName, date: date)));
+                      Navigator.of(context).pop(checks);
+                    }
                   } else {
                     print("validation failed");
                   }
